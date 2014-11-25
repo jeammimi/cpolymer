@@ -9,7 +9,7 @@ from utils import generateV,norm
 import numpy as np
 from proba import init_proba,generate_point_proba
 
-def generate(N=2,type_bead=0,liaison_size={"0-0":1.0},ptolerance=0,type_polymer="linear",starting_id=0,gconstrain=[],lconstrain=[],max_trial=100,rc=0.5,virtual_lp=None):
+def generate(N=2,type_bead=0,liaison_size={"0-0":1.0},ptolerance=0,type_polymer="linear",starting_id=0,gconstrain=[],lconstrain=[],max_trial=100,rc=0.5,virtual_lp=None,rigid=True):
     
     #function that generate one polymer chain
     
@@ -37,10 +37,10 @@ def generate(N=2,type_bead=0,liaison_size={"0-0":1.0},ptolerance=0,type_polymer=
         
         
     coords = []
-    coords.append(generate_next(coords,gconstrain=gconstrain,lconstrain = lconstrain,max_trial=max_trial,bond_sizes=bond_sizes,rc=rc,virtual_lp=virtual_lp))
+    coords.append(generate_next(coords,gconstrain=gconstrain,lconstrain = lconstrain,max_trial=max_trial,bond_sizes=bond_sizes,rc=rc,virtual_lp=virtual_lp,rigid=rigid))
     
     for bond,lbond in zip(bonds,bond_sizes):
-        coords.append(generate_next(coords,gconstrain=gconstrain,lconstrain = lconstrain,max_trial=max_trial,bond_sizes=bond_sizes,rc=rc,virtual_lp=virtual_lp))
+        coords.append(generate_next(coords,gconstrain=gconstrain,lconstrain = lconstrain,max_trial=max_trial,bond_sizes=bond_sizes,rc=rc,virtual_lp=virtual_lp,rigid=rigid))
         
     if starting_id != 0:
         bonds = [ [bond[0] + starting_id,bond[1] + starting_id] for bond in bonds ]
@@ -48,7 +48,7 @@ def generate(N=2,type_bead=0,liaison_size={"0-0":1.0},ptolerance=0,type_polymer=
     return np.array(coords) ,bonds,type_beads ,ids
 
 
-def generate_from_local_constrain(coords,bond_sizes=[],lconstrain=[],max_trial=100,rc=0.1,virtual_lp=None):
+def generate_from_local_constrain(coords,bond_sizes=[],lconstrain=[],max_trial=100,rc=0.1,virtual_lp=None,rigid=True):
     pos = []
     
     index_point = len(coords)
@@ -71,7 +71,7 @@ def generate_from_local_constrain(coords,bond_sizes=[],lconstrain=[],max_trial=1
         else:
             start_constrain= None
         
-    if start_constrain is not None and lconstrain[start_constrain].index == index_point:
+    if start_constrain is not None and lconstrain[start_constrain].index == index_point and rigid:
         # if a constrain match the index we return the position
         return np.array(lconstrain[start_constrain].position),[]
     
@@ -85,6 +85,8 @@ def generate_from_local_constrain(coords,bond_sizes=[],lconstrain=[],max_trial=1
             for c in lconstrain[start_constrain:]:
                 extent.append(c.position[xi])
                 width.append(np.sum(bond_sizes[index_point:c.index]))
+                if not rigid and width[-1] == 0:
+                    width[-1]=rc
          
         if coords != []:
             extent.append(coords[-1][xi])
@@ -126,7 +128,7 @@ def generate_from_local_constrain(coords,bond_sizes=[],lconstrain=[],max_trial=1
         redo.append([x,index])
     return np.array(pos),redo
     
-def generate_next(coords,gconstrain=[],lconstrain=[],max_trial=100,bond_size=1,bond_sizes=[],rc=0.1,virtual_lp=None):
+def generate_next(coords,gconstrain=[],lconstrain=[],max_trial=100,bond_size=1,bond_sizes=[],rc=0.1,virtual_lp=None,rigid=True):
     
     N = 0
     redo = []
@@ -141,7 +143,7 @@ def generate_next(coords,gconstrain=[],lconstrain=[],max_trial=100,bond_size=1,b
         else:
       
             if redo == []:
-                pos,redo = generate_from_local_constrain(coords,lconstrain=lconstrain,bond_sizes=bond_sizes,rc=rc,virtual_lp=virtual_lp)
+                pos,redo = generate_from_local_constrain(coords,lconstrain=lconstrain,bond_sizes=bond_sizes,rc=rc,virtual_lp=virtual_lp,rigid=rigid)
             else:
                 pos  = np.array( [ generate_point_proba(x,index) for x,index in redo ])
     
