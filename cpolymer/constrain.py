@@ -5,7 +5,7 @@ Created on Tue Nov 25 09:17:44 2014
 @author: jarbona
 """
 import numpy as np
-
+from utils import norm, generateV
 class Constrain:
     def __init__(self):
         pass
@@ -27,9 +27,24 @@ class Box(Constrain):
         for x1,x2 in zip(self.bl,self.tr):
             p.append((x2-x1)*np.random.rand()+x1)
         return p
+class Sphere(Constrain):
+    def __init__(self,position=[0,0,0],radius=1):
+        Constrain.__init__(self)
+        self.position = position
+        self.radius = np.array(radius)
+    def is_inside(self,pt):
+        if norm(self.position-np.array(pt)) <= self.radius:
+            return True
+        else:
+            return False
+    def generate(self):
+        r = self.radius * np.random.random()
+        return self.position + r*generateV()
 class Point:
     def __init__(self,index=0,position=[0,0,0]):
         self.index = index
         self.position = position
+    def __repr__(self):
+        return "%i %s"%(self.index,str(self.position))
         
         

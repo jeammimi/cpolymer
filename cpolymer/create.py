@@ -9,7 +9,10 @@ from utils import generateV,norm
 import numpy as np
 from proba import init_proba,generate_point_proba
 
-def generate(N=2,type_bead=0,liaison_size={"0-0":1.0},ptolerance=0,type_polymer="linear",starting_id=0,gconstrain=[],lconstrain=[],max_trial=100,rc=0.5,virtual_lp=None,rigid=True):
+def one_polymer(N=2,type_bead=0,liaison_size={"0-0":1.0},bond_id={"0-0":0},start_bond=0,
+                angle=False,angle_id={"0-0-0":0},angle_lp={"0-0-0":1},start_angle=0,
+                ptolerance=0,type_polymer="linear",starting_id=0,
+                gconstrain=[],lconstrain=[],max_trial=100,rc=0.5,virtual_lp=None,rigid=True):
     
     #function that generate one polymer chain
     
@@ -24,18 +27,41 @@ def generate(N=2,type_bead=0,liaison_size={"0-0":1.0},ptolerance=0,type_polymer=
         type_beads = type_bead
          
     if type_polymer == "linear":
-        bonds = [[i, i+1] for i in range(N - 1)]
-        
+        #zero is set for the initialisation
+        #the real type of bond is computed later
+        bonds = [[start_bond + i,0,i, i+1] for i in range(N - 1)]
+        angles = []
+        if angle:
+            if N >=3:
+                angles = [[start_angle,0,i,i+1,i+2] for i in range(N - 2)]
+          
+               
     assert(len(type_beads) == N)
     
    
     bond_sizes = []
-    for bond in bonds:
-        b1 = min([type_beads[bond[0]],type_beads[bond[1]]])
-        b2 =  max([type_beads[bond[0]],type_beads[bond[1]]])
-        bond_sizes.append(liaison_size["%i-%i"%(b1,b2)] )
-        
-        
+    for nb,bond in enumerate(bonds):
+        idb,typebond,m1,m2 = bond
+        b1 = min([type_beads[m1],type_beads[m2]])
+        b2 =  max([type_beads[m1],type_beads[m2]])
+        bond_sizes.append(liaison_size["%i-%i"%(b1,b2)] )       
+        bonds[nb][1] = bond_id["%i-%i"%(b1,b2)]
+    
+    if angle:
+        angle_sizes = []
+        for nb,angle in enumerate(angles):
+            ida,typeangle,m1,m2,m3 = angle
+            b1 = min([type_beads[m1],type_beads[m2]])
+            b2 =  max([type_beads[m1],type_beads[m2]])
+            left=[m1,m2,m3]
+
+            left.remove(b1)
+            left.remove(b2)
+            left = type_beads[left[0]]
+            #print b1,left,b2
+            angle_sizes.append(angle_lp["%i-%i-%i"%(b1,left,b2)] )       
+            angles[nb][1] = angle_id["%i-%i-%i"%(b1,left,b2)]
+    
     coords = []
     coords.append(generate_next(coords,gconstrain=gconstrain,lconstrain = lconstrain,max_trial=max_trial,bond_sizes=bond_sizes,rc=rc,virtual_lp=virtual_lp,rigid=rigid))
     
@@ -43,9 +69,12 @@ def generate(N=2,type_bead=0,liaison_size={"0-0":1.0},ptolerance=0,type_polymer=
         coords.append(generate_next(coords,gconstrain=gconstrain,lconstrain = lconstrain,max_trial=max_trial,bond_sizes=bond_sizes,rc=rc,virtual_lp=virtual_lp,rigid=rigid))
         
     if starting_id != 0:
-        bonds = [ [bond[0] + starting_id,bond[1] + starting_id] for bond in bonds ]
+        bonds = [ [bond[0],bond[1],bond[2] + starting_id,bond[3] + starting_id] for bond in bonds ]
+        angles = [ [angle[0],angle[1],angle[2] + starting_id,angle[3] + starting_id,angle[4] + starting_id] for angle in angles ]
+
         ids = [idt + starting_id for idt in ids]
-    return np.array(coords) ,bonds,type_beads ,ids
+    
+    return np.array(coords) ,[bonds,angles],type_beads ,ids
 
 
 def generate_from_local_constrain(coords,bond_sizes=[],lconstrain=[],max_trial=100,rc=0.1,virtual_lp=None,rigid=True):
