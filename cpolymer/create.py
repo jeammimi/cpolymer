@@ -10,7 +10,7 @@ import numpy as np
 from proba import init_proba,generate_point_proba
 
 def one_polymer(N=2,type_bead=0,liaison={"0-0":[1.0,0]},start_bond=0,
-                angle=False,angle_def={"0-0-0":[1.0,0]},start_angle=0,
+                angle_bond=False,angle_def={"0-0-0":[1.0,0]},start_angle=0,
                 ptolerance=0,type_polymer="linear",start_id=0,
                 gconstrain=[],lconstrain=[],max_trial=100,rc=0.5,virtual_lp=None,rigid=True):
     
@@ -30,7 +30,7 @@ def one_polymer(N=2,type_bead=0,liaison={"0-0":[1.0,0]},start_bond=0,
         #the real type of bond is computed later
         bonds = [[start_bond + i,0,i, i+1] for i in range(N - 1)]
         angles = []
-        if angle:
+        if angle_bond:
             if N >=3:
                 angles = [[start_angle,0,i,i+1,i+2] for i in range(N - 2)]
           
@@ -48,7 +48,7 @@ def one_polymer(N=2,type_bead=0,liaison={"0-0":[1.0,0]},start_bond=0,
         bond_sizes.append(liaison["%i-%i"%(b1,b2)][0] )       
         bonds[nb][1] = liaison["%i-%i"%(b1,b2)][1]
     
-    if angle:
+    if angle_bond:
         angle_sizes = []
         for nb,angle in enumerate(angles):
             ida,typeangle,m1,m2,m3 = angle

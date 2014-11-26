@@ -46,7 +46,7 @@ def get_ref_points(snucleus,smicrotubule,l_len_p=[]):
         res_start.append(res)
     return res_start
     
-def cell(chrlen,chrcen,Ribopos,lp,Radius,mt,liaison,angle_def,angle):
+def cell(chrlen,chrcen,Ribopos,lp,Radius,mt,liaison,angle_def,angle_bond):
     """
     chrlen and chrcen are in monomere unit
     Ribopos also
@@ -66,20 +66,20 @@ def cell(chrlen,chrcen,Ribopos,lp,Radius,mt,liaison,angle_def,angle):
     chl = np.array(chl)
   
     Refs = get_ref_points(snucleus=Radius,smicrotubule=mt,l_len_p=chl)
-    print liaison
+    #print liaison
     xyz = []
     bond = []
     angle = []
     idss = []
     typeb = []
     nucleus = Sphere(position=[0,0,0],radius=Radius)
-    start_id=0
+    start_id=1
     start_bond=0
     start_angle=0
     for chromosome,(rep,length) in enumerate(zip(Refs,chn)):
-        print chromosome,length,chl[chromosome]
+        #print chromosome,length,chl[chromosome]
         #,rep
-        print Radius,mt
+        #print Radius,mt
         
         #print start,middle,end
         type_bead = [1 for n in range(length[2])]
@@ -110,7 +110,7 @@ def cell(chrlen,chrcen,Ribopos,lp,Radius,mt,liaison,angle_def,angle):
         
             
         coords,bonds,type_beads,ids = one_polymer(N=length[2],type_bead=type_bead,liaison=liaison,
-                                                  angle=angle,
+                                                  angle_bond=angle_bond,
                                                   angle_def=angle_def,
                                                   ptolerance=0,type_polymer="linear",
                                                   lconstrain=lconstrain,gconstrain=[nucleus],
@@ -118,7 +118,7 @@ def cell(chrlen,chrcen,Ribopos,lp,Radius,mt,liaison,angle_def,angle):
                                                   start_id=start_id,start_bond=start_bond,start_angle=start_angle)   
         
         start_id = ids[-1] + 1
-        print bonds[0][-2:]
+        
         if bonds[0] != [] :
             start_bond = bonds[0][-1][0] + 1
         if bonds[1] != []:

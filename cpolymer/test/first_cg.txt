@@ -1,0 +1,133 @@
+#####################################################
+#                                                   #
+#                                                   #
+# Filename: in.deform.polychain.txt                 #
+# Author: Mark Tschopp, 2010                        #
+#                                                   #
+# The methodology outlined here follows that from   #
+# Hossain, Tschopp, et al. 2010, Polymer.  Please   #
+# cite accordingly. The following script requires   #
+# a LAMMPS data file containing the coordinates and #
+# appropriate bond/angle/dihedral lists for each    #
+# united atom.                                      #
+#                                                   #
+# Execute the script through:                       #
+# lmp_exe < in.deform.polychain.txt                 #
+#                                                   #
+#####################################################
+
+# VARIABLES
+include typecell
+variable fname index ${typecell}conf2.txt    # configuration initiale
+variable simname index test
+
+
+#package cuda override/bpa 1
+
+
+# Initialization
+#correspond to x=y=z=1
+lattice fcc 4
+units		lj
+boundary	f f f
+atom_style	molecular
+log 		log.${simname}.txt
+read_data	${fname}
+
+# Dreiding potential information
+#neighbor	2.0 multi
+
+neighbor 2.0 multi
+
+#neigh_modify	every 10 check yes
+
+
+include softinteractions
+include variables
+
+#compute csym all centro/atom fcc
+#compute peratom all pe/atom 
+
+
+#####################################################
+# Equilibration (Langevin dynamics at 5000 K)
+
+group telo type 2
+group norm type 1 2 4 6
+group ribo type 3
+group centro type 4
+group spb  type 5
+group particle type 1 2 3 4 6
+compute hic particle pair/local dist
+compute hicp particle property/local patom1 patom2
+
+
+
+dump 		10 all dcd 1000 dump_init.${typecell}.comp.dcd
+
+
+
+###########################################################
+#Definiton of nucleus and its interaction
+#the telomere part is added when the nuceus has the right size
+
+region mySphere sphere 0.0 0.0 0.0 v_rad side in
+
+fix wall1 norm wall/region mySphere lj126 ${eNorm} ${sigNorm} ${sigNormCut} 
+fix wall2 ribo wall/region mySphere lj126 ${eRibo} ${sigRibo} ${sigRiboCut}
+
+
+
+fix wall telo wall/region mySphere  lj93  ${etelo} ${sigtelo} ${cuttelo}
+
+
+
+include softspbinteraction
+variable rad equal ${frad}
+
+
+
+velocity 	particle create 1.0 1231
+
+
+
+
+#To equilibriate wall effect and spb interaction
+#Slow move
+thermo_style	custom step temp 
+thermo          10000
+timestep	0.0005 
+fix		2 particle langevin 1.0 1.0 ${damp} 904297
+fix		sloweq particle nve/limit 0.005
+run		20000 
+unfix sloweq
+
+#Faster move
+
+thermo_style	custom step temp 
+thermo          10000
+timestep	0.005 
+
+fix		4 particle nve/limit 0.005
+run		500000 
+    
+variable hbox equal 1.2*${frad}
+variable lbox equal -1.2*${frad}
+change_box all x final ${lbox} ${hbox} y final ${lbox} ${hbox} z final ${lbox} ${hbox}
+
+unfix 4
+fix		5 particle nve/limit 0.05
+#write_data data.polymer
+    
+#write_restart in_da_box
+
+
+run		200000 
+
+unfix 2
+#fix		addscale particle langevin 1.0 1.0 ${damp} 904297  scale 3 0.29 
+fix		addscale particle langevin 1.0 1.0  ${damp} 904297  scale 3 ${isigrDNA}
+
+
+
+#####################################################

@@ -32,13 +32,13 @@ def test_startbond():
     assert (bonds[0] == [[1,0,1,2]])
     
 def test_angle():   
-    coords,bonds,type_beads,ids = one_polymer(N=2,type_bead=0,liaison={"0-0":[1.0,0]},ptolerance=0,type_polymer="linear",start_id=1,start_bond=1,angle=True)
+    coords,bonds,type_beads,ids = one_polymer(N=2,type_bead=0,liaison={"0-0":[1.0,0]},ptolerance=0,type_polymer="linear",start_id=1,start_bond=1,angle_bond=True)
     assert (bonds[1] == [])
     
 def test_create_mixture_angle():
     coords,bonds,type_beads,ids = one_polymer(N=3,type_bead=[0,1,0],
                                              liaison={"0-0":[1.0,0],"0-1":[2.0,1]},
-                                              angle=True,
+                                              angle_bond=True,
                                               angle_def={"0-0-0":[1.,0],"0-0-1":[1.,1],"0-1-1":[1.,2],"1-1-1":[1.,3]},
                                         ptolerance=0,type_polymer="linear",start_id=0)
     assert (bonds[0] == [[0,1,0,1],[1,1,1,2]])
@@ -46,7 +46,7 @@ def test_create_mixture_angle():
 def test_create_mixture_angle_start_angle():
     coords,bonds,type_beads,ids = one_polymer(N=3,type_bead=[0,1,0],
                                                liaison={"0-0":[1.0,0],"0-1":[2.0,1]},
-                                              angle=True,start_angle=10,
+                                              angle_bond=True,start_angle=10,
                                               angle_def={"0-0-0":[1.,0],"0-0-1":[1.,1],"0-1-1":[1.,2],"1-1-1":[1.,3]},
                                         ptolerance=0,type_polymer="linear",start_id=0)
     assert (bonds[0] == [[0,1,0,1],[1,1,1,2]])
@@ -55,7 +55,7 @@ def test_create_mixture_angle_start_angle():
 def test_create_mixture_angle_start_angle_start_id():
     coords,bonds,type_beads,ids = one_polymer(N=3,type_bead=[0,1,0],
                                                liaison={"0-0":[1.0,0],"0-1":[2.0,1]},
-                                              angle=True,start_angle=10,
+                                              angle_bond=True,start_angle=10,
                                              angle_def={"0-0-0":[1.,0],"0-0-1":[1.,1],"0-1-1":[1.,2],"1-1-1":[1.,3]},
                                         ptolerance=0,type_polymer="linear",start_id=20)
     assert (bonds[0] == [[0,1,20,21],[1,1,21,22]])
