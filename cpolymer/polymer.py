@@ -32,6 +32,11 @@ class Polymer:
         if len(coords) == len(self.coords):
             self.coords = coords
         
+    def shift(self,add_id=0,add_bond=0,add_angle=0):
+        self.ids = [iid + add_id for iid in self.ids]
+        self.bond = [ [b[0]+add_bond,b[1],b[2] + add_id,b[3] + add_id ] for b in self.bond]
+        self.angle = [ [b[0]+add_angle,b[1],b[2] + add_id,b[3] + add_id,b[4] + add_id ] for b in self.angle]
+        
     def get_types_beads(self):
         return set(self.types_beads)
         
@@ -39,7 +44,9 @@ class Polymer:
         
         #Must set the id of the atom to the start_id
         id_add = start_id - self.ids[0]
-        bond_add = start_bond - self.bond[0][0]
+        bond_add = 0
+        if self.bond != []:
+            bond_add = start_bond - self.bond[0][0]
         angle_add = 0
         if self.angle != []:
             angle_add = start_angle - self.angle[0][0]

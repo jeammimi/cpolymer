@@ -26,6 +26,10 @@ def test_create_mixture():
 def test_startid():   
     coords,bonds,type_beads,ids = one_polymer(N=2,type_bead=0,liaison={"0-0":[1.0,0]},ptolerance=0,type_polymer="linear",start_id=1)
     assert (bonds[0] == [[0,0,1,2]])
+    
+def test_one_particule():   
+    coords,bonds,type_beads,ids = one_polymer(N=1,type_bead=0,liaison={"0-0":[1.0,0]},ptolerance=0,type_polymer="linear",start_id=1)
+    assert (bonds[0] == [])
 
 def test_startbond():   
     coords,bonds,type_beads,ids = one_polymer(N=2,type_bead=0,liaison={"0-0":[1.0,0]},ptolerance=0,type_polymer="linear",start_id=1,start_bond=1)

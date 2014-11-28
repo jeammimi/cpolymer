@@ -20,6 +20,29 @@ class LSimu:
         self.box = None
 
     def add(self,molecule):
+        if self.molecules == []:
+            start_id = 1
+            start_bond = 0
+            start_angle = 0
+        else:
+            start_id = self.molecules[-1].ids[-1] + 1
+            
+            #look for the firts previous molecule with a bond
+            for mol in self.molecules[::-1]:
+                if mol.bond != []:
+                    start_bond = mol.bond[-1][0] + 1
+                    
+            if  self.molecules[-1].angle != []:
+                start_angle = self.molecules[-1].angle[-1][0]
+                
+        add_id = start_id - molecule.ids[0]
+        add_bond = 0
+        if molecule.bond != []:
+            add_bond = start_bond - molecule.bond[0][0]
+        add_angle = 0
+        if molecule.angle != []:
+            add_angle = start_angle - molecule.angle[0][0]
+        molecule.shift(add_id,add_bond,add_angle)
         self.molecules.append(molecule)
         
     def add_box(self,box):
@@ -39,7 +62,9 @@ class LSimu:
             raise
         NP = kwargs["NP"]
         kwargs.pop("NP")
-        self.molecules = [Polymer(**kwargs) for p in range(NP)]
+        self.molecules = []
+        for p in range(NP):
+            self.add(Polymer(**kwargs))
         
     
     def generate_xyz(self,xyz_name,Mass=None,from_lammps_xyz=None):
@@ -73,9 +98,11 @@ class LSimu:
         self.liaison = None
         self.angle_def = None
         self.natom = set()
+        
         for molecule in self.molecules:
             if coords != []:
                 molecule.change_coords(coords[start_id - 1:len(molecule.ids)])
+            #still assigning a start_id but it should already be correct
             Atom,Bond,Angle = molecule.get_xyz(start_id=start_id,start_bond=start_bond,start_angle=start_angle)
             start_id += len(Atom) 
             start_bond += len(Bond)
