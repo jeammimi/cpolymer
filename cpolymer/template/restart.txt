@@ -1,6 +1,6 @@
 #####################################################
 #                                                   #
-#                                                   #
+#     j                                          #
 # Filename: in.deform.polychain.txt                 #
 # Author: Mark Tschopp, 2010                        #
 #                                                   #
@@ -19,8 +19,16 @@
 # VARIABLES
 include typecell
 variable fname index ${typecell}conf2.txt    # configuration initiale
+#variable fname index ${typecell}conf0.txt    # configuration initiale
 variable simname index test
 
+variable namerestfile index final3.xyz
+variable namef index dumprest4.${typecell}.comp.dcd
+#variable namef index dumpevery10.${typecell}.comp.dcd
+
+
+shell python check_restart.py ${namef} ${namerestfile}
+include nrestart
 
 #package cuda override/bpa 1
 
@@ -42,7 +50,7 @@ neighbor 2.0 multi
 #neigh_modify	every 10 check yes
 
 
-
+include interactions
 include variables
 
 #compute csym all centro/atom fcc
@@ -62,72 +70,42 @@ compute hic particle pair/local dist
 compute hicp particle property/local patom1 patom2
 
 
+#load traj
 
-dump 		10 all dcd 1000 dump_init.${typecell}.comp.dcd
+#read_dump dumpint.yeast.comp.dcd 5 x y z box no format molfile dcd replace yes
+read_dump ${namerestfile} 0 x y z box no format xyz
+#rerun dumpint.yeast.comp.dcd dump x y z box no 
 
+ 
+velocity 	particle create 1.0 1231
+fix		1 particle nve/limit 0.05
+fix		addscale particle langevin 1.0 1.0  ${damp} 904297  scale 3 ${isigrDNA}
 
+########New
+#variable damp equal 4
 
-###########################################################
-#Definiton of nucleus and its interaction
-#the telomere part is added when the nuceus has the right size
-
-region mySphere sphere 0.0 0.0 0.0 v_rad side in
+region mySphere sphere 0.0 0.0 0.0 v_frad side in
 
 fix wall1 norm wall/region mySphere lj126 ${eNorm} ${sigNorm} ${sigNormCut} 
 fix wall2 ribo wall/region mySphere lj126 ${eRibo} ${sigRibo} ${sigRiboCut}
 
+include spbinteraction
 
+thermo_style	custom step temp 
+thermo          10000
+timestep	0.005 
+#timestep	0.012
+
+
+variable hbox equal 1.1*${frad}
+variable lbox equal -1.1*${frad}
+change_box all x final ${lbox} ${hbox} y final ${lbox} ${hbox} z final ${lbox} ${hbox}
 
 fix wall telo wall/region mySphere  lj93  ${etelo} ${sigtelo} ${cuttelo}
 
 
-include softinteractions
-include softspbinteraction
-
-variable rad equal ${frad}
-
-
-
-velocity 	particle create 1.0 1231
-
-
-
-
-#To equilibriate wall effect and spb interaction
-#Slow move
-thermo_style	custom step temp 
-thermo          10000
-timestep	0.0005 
-fix		2 particle langevin 1.0 1.0 ${damp} 904297
-fix		sloweq particle nve/limit 0.005
-run		50000 
-unfix sloweq
-
-timestep	0.005 
-fix		sloweq particle nve/limit 0.005
-run		50000 
-
-timestep	0.012 
-fix		sloweq particle nve/limit 0.005
-run		50000 
-
-include interactions
-include spbinteraction
-run		50000
-unfix sloweq
-unfix 2
-
-#Faster move
-
-thermo_style	custom step temp 
-thermo          10000
-timestep	0.010 
-fix		addscale particle langevin 1.0 1.0  ${damp} 904297  scale 3 ${isigrDNA}
-fix		4 particle nve/limit 0.05
-run		500000 
- 
-
-
-
-
+reset_timestep ${nrest}
+dump Hic all local 1000 dump.hic_*.cfg c_hicp[1] c_hicp[2] c_hic
+dump 		1 all dcd 10000 ${namef}
+run 100000000 upto
 #####################################################

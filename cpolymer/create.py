@@ -9,8 +9,8 @@ from utils import generateV,norm
 import numpy as np
 from proba import init_proba,generate_point_proba
 
-def one_polymer(N=2,type_bead=0,liaison={"0-0":[1.0,0]},start_bond=0,
-                angle_bond=False,angle_def={"0-0-0":[1.0,0]},start_angle=0,
+def one_polymer(N=2,type_bead=1,liaison={"1-1":[1.0,1]},start_bond=0,
+                angle_bond=False,angle_def={"1-1-1":[1.0,1]},start_angle=0,
                 ptolerance=0,type_polymer="linear",start_id=0,
                 gconstrain=[],lconstrain=[],max_trial=100,rc=0.5,virtual_lp=None,rigid=True):
     
