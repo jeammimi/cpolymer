@@ -28,6 +28,7 @@ class Polymer:
         self.angle = bonds[1]
         self.types_beads = type_beads
         self.ids = ids
+        self.extrabond = []
     def change_coords(self,coords):
         if len(coords) == len(self.coords):
             self.coords = coords
@@ -39,7 +40,12 @@ class Polymer:
         
     def get_types_beads(self):
         return set(self.types_beads)
-        
+    
+    def get_xyz_extrabond(self,start_bond):
+        Bond = []
+        for bid,typebond,n1,n2 in self.extrabond:
+            Bond.append("%10i%10i%10i%10i\n"%(bid + start_bond, typebond, n1 , n2 ))
+        return Bond
     def get_xyz(self,start_id=1,start_bond=0,start_angle=0):#,start_dihedral=0):
         
         #Must set the id of the atom to the start_id

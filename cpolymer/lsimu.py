@@ -9,6 +9,12 @@ import string
 import copy
 import numpy as np
 from polymer import Polymer
+from bond import Bond
+from pair import Pair
+from angle import Angle
+
+from sortn import sort_nicely
+
 
 class LSimu:
     def __init__(self,cmd="lammps"):
@@ -18,6 +24,13 @@ class LSimu:
         self.xyz_name = None
         self.pdb_name = None
         self.box = None
+        self.Bond = []
+        self.Angle = []
+        self.Pair = []
+        
+        #Generate list to define interaction for lammps simulation
+        self.clean_interactions()
+        
 
     def add(self,molecule):
         if self.molecules == []:
@@ -45,6 +58,14 @@ class LSimu:
         molecule.shift(add_id,add_bond,add_angle)
         self.molecules.append(molecule)
         
+    def add_bond(self,**bond):
+        self.iBond.append(Bond(**bond))
+        
+    def add_pair(self,**pair):
+        self.iPair.append(Pair(**pair))
+        
+    def add_angle(self,**angle):
+        self.iAngle.append(Angle(**angle))
     def add_box(self,box):
         self.box = box
         
@@ -125,7 +146,13 @@ class LSimu:
                 if self.angle_def != molecule.angle_def:
                     #try to merge
                     pass
-            
+                
+        #Extra bonds:
+        for molecule in self.molecules:
+             
+            self.Bond.extend(molecule.get_xyz_extrabond(start_bond=len(self.Bond)))
+               
+        
         
         self.ntype_bond = len(self.liaison.keys())
         
@@ -146,9 +173,9 @@ class LSimu:
                  %i     angle types
                  0     dihedral types"""%(max(self.natom),self.ntype_bond,self.ntype_angle))
         if self.box is None:
-            print("Must add a box: ")
-            print("ex: LSimu.add_box([0,0,0],[10,10,10])")
-            raise
+            raise ("Must add a box: "
+                    "ex: LSimu.add_box([0,0,0],[10,10,10])")
+            
             
         f.write("""         
             %8.4f   %8.4f xlo xhi         
@@ -212,7 +239,88 @@ class LSimu:
         
         return
         
-    def generate_interactions(self,interaction_name,bond="harmonic",SPB=False,radius=10,cutoff=1.15,reducedv_factor=1,khun=1.):
+    def clean_interactions(self):
+        self.iBond = []
+        self.iPair = []
+        self.iAngle = []
+        
+    def generate_interactions(self,interaction_name,info_bond=[],info_pair=[],write=True,sort=True):
+        
+        typeb = set([bond.typeb for bond in self.iBond])
+        hybrid =""
+        if len(typeb) > 1:
+            hybrid="hybrid"
+        self.Bond_interaction = ["bond_style {0} {1}\n".format(hybrid," ".join(typeb))]
+        
+        if info_bond != []:
+            self.Bond_interaction.extend(info_bond)
+            
+        Bond_interaction =[]
+        for i in range(len(self.iBond)):
+            if len(typeb) > 1:
+                self.iBond[i].hybrid=True
+            Bond_interaction.append(str(self.iBond[i]))
+        if sort:
+            sort_nicely(Bond_interaction)
+        self.Bond_interaction.extend(Bond_interaction)
+            
+        
+                
+        typep = set([pair.typep for pair in self.iPair])
+        hybrid =""
+        if len(typep) > 1:
+            hybrid="hybrid"
+        self.Pair_interaction = ["pair_style {0} {1}\n".format(hybrid," ".join(typep))]
+        
+        
+        if len(typep) == 1 and list(typep)[0] == "lj/cut":
+            #print "nthnthnt"
+            #raise
+            maxcut = max([pair.args.get("cutoff1",0) for pair in self.iPair ])
+            self.Pair_interaction = ["pair_style lj/cut {0:.2f}".format(maxcut)]
+            self.Pair_interaction.append("pair_modify shift yes")
+            
+        self.Pair_interaction.extend(info_pair)
+        
+        Pair_interaction = []
+        for i in range(len(self.iPair)):
+            if len(typep) > 1:
+                self.iPair[i].hybrid=True
+            Pair_interaction.append(str(self.iPair[i]))
+        if sort:
+            sort_nicely(Pair_interaction)
+        self.Pair_interaction.extend(Pair_interaction)
+        
+        
+        typea = set([angle.typea for angle in self.iAngle])
+        
+        hybrid =""
+        if len(typea) > 1:
+            hybrid="hybrid"
+        self.Angle_interaction = ["angle_style {0} {1}\n".format(hybrid," ".join(typea))]
+
+        Angle_interaction = []
+        for i in range(len(self.iAngle)):
+            if len(typep) > 1:
+                self.iAngle[i].hybrid=True
+            Angle_interaction.append(str(self.iAngle[i]))
+        if sort:
+            sort_nicely(Angle_interaction)
+        self.Angle_interaction.extend(Angle_interaction)
+        
+        if write:
+            self.write_interactions(interaction_name)
+            
+    def write_interactions(self,interaction_name):
+        with open(interaction_name,"w") as g:
+            g.write("\n".join(self.Bond_interaction)+"\n\n")
+            g.write("\n".join(self.Pair_interaction)+"\n\n")
+            if self.Angle != []:
+                g.write("\n".join(self.Angle_interaction))
+        
+        
+        
+    def generate_interactions_o(self,interaction_name,bond="harmonic",SPB=False,radius=10,cutoff=1.15,reducedv_factor=1,khun=1.):
 
         if bond == "harmonic" :
             temp1 = "bond_style      harmonic\n"
@@ -243,6 +351,8 @@ class LSimu:
         for t1 in keyl:
             for t2 in keyl:
                 if t2 >= t1:
+                    if not self.liaison.has_key("%s-%s"%(t1,t2)):
+                        print "Warning liaison between {0} and {1} not defined".format(t1,t2)
                     dist,tybe_b = self.liaison["%s-%s"%(t1,t2)]
                     if  cutoff is not None:                   
                         cut = dist*cutoff
@@ -274,11 +384,11 @@ class LSimu:
                                 Angle.append("angle_coeff %i %.3f 180.0\n"%(tybe_b,k))
         if SPB:
             if bond == "fene":
-                Bond.append("bond_coeff %i harmonic 0 0 \n"%(lbond["spb"][1]))
-                spbond = "bond_coeff %i harmonic %.1f %.1f\n"%(lbond["spb"][1],10,microtubule/realsigma)
+                Bond.append("bond_coeff %i harmonic 0 0 \n"%(self.liaison["spb"][1]))
+                spbond = "bond_coeff %i harmonic %.1f %.1f\n"%(self.liaison["spb"][1],10,microtubule/realsigma)
             else:
-                Bond.append("bond_coeff %i  0 0 \n"%(lbond["spb"][1]))
-                spbond = "bond_coeff %i %.1f %.1f\n"%(lbond["spb"][1],10,microtubule/realsigma)
+                Bond.append("bond_coeff %i  0 0 \n"%(self.liaison["spb"][1]))
+                spbond = "bond_coeff %i %.1f %.1f\n"%(self.liaison["spb"][1],10,microtubule/realsigma)
             n_i = len(diameter)/2
             for t1 in range(len(diameter) ):
                 Pair.append("""pair_coeff	 %i %i %s 0. %.2f  %.2f\n"""%(t1+1,num_particle["spb"],precise,dist,cut))

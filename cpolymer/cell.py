@@ -8,7 +8,7 @@ from halley.constrain import Spherical,Nowhere
 from halley.vectors import V
 import numpy as np
 from constrain import Sphere,Point
-from create import one_polymer
+from polymer import Polymer
 
 def get_ref_points(snucleus,smicrotubule,l_len_p=[]):
     center = Spherical(V.O,radius=snucleus)
@@ -67,15 +67,10 @@ def cell(chrlen,chrcen,Ribopos,lp,Radius,mt,liaison,angle_def,angle_bond):
   
     Refs = get_ref_points(snucleus=Radius,smicrotubule=mt,l_len_p=chl)
     #print liaison
-    xyz = []
-    bond = []
-    angle = []
-    idss = []
-    typeb = []
+
     nucleus = Sphere(position=[0,0,0],radius=Radius)
-    start_id=1
-    start_bond=0
-    start_angle=0
+
+    list_polymer = []
     for chromosome,(rep,length) in enumerate(zip(Refs,chn)):
         #print chromosome,length,chl[chromosome]
         #,rep
@@ -109,26 +104,15 @@ def cell(chrlen,chrcen,Ribopos,lp,Radius,mt,liaison,angle_def,angle_bond):
                 lconstrain=[start,middle,nucleole,end]
         
             
-        coords,bonds,type_beads,ids = one_polymer(N=length[2],type_bead=type_bead,liaison=liaison,
+        list_polymer.append(Polymer(N=length[2],type_bead=type_bead,liaison=liaison,
                                                   angle_bond=angle_bond,
                                                   angle_def=angle_def,
                                                   ptolerance=0,type_polymer="linear",
                                                   lconstrain=lconstrain,gconstrain=[nucleus],
-                                                  max_trial=300000,rc=0.5,virtual_lp=None,rigid=False,
-                                                  start_id=start_id,start_bond=start_bond,start_angle=start_angle)   
-        
-        start_id = ids[-1] + 1
-        
-        if bonds[0] != [] :
-            start_bond = bonds[0][-1][0] + 1
-        if bonds[1] != []:
-            start_angle =  bonds[1][-1][0] + 1
-        xyz.extend(coords)
-        bond.extend(bonds[0])
-        angle.extend(bonds[1])
-        typeb.extend(type_beads)
-        idss.extend(ids)
-    return xyz,idss,typeb,bond,angle
+                                                  max_trial=300000,rc=0.5,virtual_lp=None,rigid=False))
+                                                  
+    
+    return list_polymer
 if __name__ == "__main__":
     chrlen=[230218,
             813184,
