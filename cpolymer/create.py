@@ -32,7 +32,7 @@ def one_polymer(N=2,type_bead=1,liaison={"1-1":[1.0,1]},start_bond=0,
         angles = []
         if angle_bond:
             if N >=3:
-                angles = [[start_angle,0,i,i+1,i+2] for i in range(N - 2)]
+                angles = [[start_angle + i,0,i,i+1,i+2] for i in range(N - 2)]
           
                
     assert(len(type_beads) == N)

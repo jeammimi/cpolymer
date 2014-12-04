@@ -99,15 +99,20 @@ def test_lammps_from_hand_mix2():
     Simu = LSimu()
     box = Box([0,0,0],[10,10,10])
     liaison = {"1-1":[1,1],"1-2":[1,2],"2-2":[1,3]}
-    P1 = Polymer(N=20,type_bead=[1]*10+[2]*10,liaison=liaison,ptolerance=0,type_polymer="linear",start_id=0,lconstrain=[],gconstrain=[box])
-
+    P1 = Polymer(N=20,type_bead=[1]*5+[2]*5+[1]*5+[2]*5,liaison=liaison,ptolerance=0,type_polymer="linear",start_id=0,lconstrain=[],gconstrain=[box])
+  
     Simu.add(P1)
+  
     Simu.add_box(box)
     for idl,value in liaison.iteritems(): 
         R0,idbond = value
         idpair1,idpair2=map(int,idl.split("-"))
         Simu.add_bond(typeb="harmonic",idbond=idbond,K=80,R0=R0)
-        Simu.add_pair(typep="lj/cut",idpair1=idpair1,idpair2=idpair2,epsilon=1,sigma=R0,cutoff1=1.15)
+        if idpair1 == idpair2:
+            cutoff1 = 3
+        else:
+            cutoff1 = 1.5
+        Simu.add_pair(typep="lj/cut",idpair1=idpair1,idpair2=idpair2,epsilon=1,sigma=R0,cutoff1=cutoff1)
     Simu.generate_xyz("test/mix.xyz",Mass="one")
     Simu.generate_interactions("test/interactions")
     Simu.generate_pdb("test/mix.pdb")

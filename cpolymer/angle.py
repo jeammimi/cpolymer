@@ -5,7 +5,10 @@ Created on Mon Dec  1 15:24:01 2014
 @author: jarbona
 """
 description_angle = {"harmonic":{"template":"{K} {theta}",
-                                "required":["idangle","K","theta"]}}
+                                "required":["idangle","K","theta"]},
+                    "cosine/delta":{"template":"{K} {theta}",
+                                "required":["idangle","K","theta"]}
+                }
                     
 
 class Angle:

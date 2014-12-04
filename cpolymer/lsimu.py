@@ -12,6 +12,7 @@ from polymer import Polymer
 from bond import Bond
 from pair import Pair
 from angle import Angle
+import os
 
 from sortn import sort_nicely
 
@@ -27,7 +28,7 @@ class LSimu:
         self.Bond = []
         self.Angle = []
         self.Pair = []
-        
+        self.extra_bond =[]
         #Generate list to define interaction for lammps simulation
         self.clean_interactions()
         
@@ -148,9 +149,11 @@ class LSimu:
                     pass
                 
         #Extra bonds:
-        for molecule in self.molecules:
-             
-            self.Bond.extend(molecule.get_xyz_extrabond(start_bond=len(self.Bond)))
+        for mol1,mol2,typeb in self.extra_bond:
+            absolute1 = self.molecules[mol1[0]-1].ids[mol1[1]-1]
+            absolute2 = self.molecules[mol2[0]-1].ids[mol2[1]-1]
+            bid = len(self.Bond)
+            self.Bond.append("%10i%10i%10i%10i\n"%(bid, typeb, absolute1 , absolute2 ))
                
         
         
@@ -197,6 +200,14 @@ class LSimu:
         if self.Angle != []:
             f.write("Angles\n\n%s\n"%("".join(self.Angle)))
         f.close()
+        
+    def add_extra_bond(self,mol1,mol2,typeb):
+        """
+        The references start from one to follow lammps convention
+        mol1 = [molid,atomid]
+        mol2 = [molid,atomid]
+        """
+        self.extra_bond.append([mol1,mol2,typeb])
     
     def generate_pdb(self,pdb_name,shift=0,traduction={"1":"bead"}):
         
@@ -402,6 +413,15 @@ class LSimu:
             g.write("".join(Angle))
     
     def generate_script(self,script_name,template_name="./template/basic.txt",**kwargs):
+        
+        
+        #First look in the template directory
+        if os.path.exists(os.path.join(os.path.dirname(__file__), template_name)):
+            template_name = os.path.abspath(os.path.join(os.path.dirname(__file__), template_name))
+            print "Reading template" , template_name
+       
+  
+       
         with open(template_name,"r") as f:
             template = string.Template("".join(f.readlines()))
             template = template.safe_substitute(kwargs)
