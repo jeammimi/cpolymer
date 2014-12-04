@@ -56,6 +56,20 @@ def test_create_mixture_angle_start_angle():
     assert (bonds[0] == [[0,1,0,1],[1,1,1,2]])
     assert (bonds[1] == [[10,1,0,1,2]])
 
+def test_crash():
+    PS = [0.2,0.2,0.2]
+    PM = [10,10.2,0.2]
+    PE = [0.2,199,19]
+    start = Point(index=0,position=PS)  
+    middle = Point(index=39,position=PM)
+    
+    end = Point(index=399,position=PE)
+    #end = Point(index=199,position=[0.2,0.2,0.2])
+    box = Box([-10,-10,-10],[400,400,400])
+    coords_lp,bonds,type_beads,ids = one_polymer(N=400,type_bead=1,liaison={"1-1":[1.0,1]},ptolerance=0,
+                                           type_polymer="linear",start_id=0,lconstrain=[start,middle,end],
+                                           gconstrain=[box],max_trial=500000,rc=0.5,virtual_lp=3,rigid=True)
+
 def test_create_mixture_angle_start_angle_start_id():
     coords,bonds,type_beads,ids = one_polymer(N=3,type_bead=[0,1,0],
                                                liaison={"0-0":[1.0,0],"0-1":[2.0,1]},

@@ -9,12 +9,36 @@ from utils import generateV,norm
 import numpy as np
 from proba import init_proba,generate_point_proba
 
-def one_polymer(N=2,type_bead=1,liaison={"1-1":[1.0,1]},start_bond=0,
-                angle_bond=False,angle_def={"1-1-1":[1.0,1]},start_angle=0,
-                ptolerance=0,type_polymer="linear",start_id=0,
-                gconstrain=[],lconstrain=[],max_trial=100,rc=0.5,virtual_lp=None,rigid=True):
+def one_polymer(N=2,type_bead=1,liaison={"1-1":[1.0,1]},type_polymer="linear",
+                angle_bond=False,angle_def={"1-1-1":[1.0,1]},
+                start_id=1,start_bond=0,start_angle=0,
+                ptolerance=0,
+                gconstrain=[],lconstrain=[],max_trial=300000,rc=0.5,virtual_lp=None,rigid=True):
+    """
+    Function to generate a polymer chain
+    return coordinate list , [bond list,angle list] , type of bead list, list of id of the monomers
     
-    #function that generate one polymer chain
+    N is the total number of monomers
+    type_bead can be set as an integer whose value us the type of monomer
+              or with  a list containing the type of bead of each monomer
+    liaison is a dictionnary which contain in key the name of the type of bead
+            linked. The first value of the item is the size of the length and
+            the second the type of bonds (Used later to defined ist properties with lammps)
+            Must be key must be specified as 1-2 and not 2-1 for example
+    angle_bond set to True to define bond between three monomer
+    angle_def is the same as liaison but to define angle bond between three monomers
+    start_id is used to shift the ids of the monomers
+    start_bond is used to shift the ids of the bonds
+    start_angle is used to shift the ids of the angle
+    ptolerance (not implemented)
+    gconstrain : list of global spatial constrained to be respected
+    lconstrain : list of local contstrain to be respected
+    max_trial : maximium number of trial to generate a point when some contrain are applied
+    rc is used to enforce the constrain
+    virtual_lp if different of none (Ex 2.0) the rigidity of the initial chain will be increased
+    Be carefull the value here won t be proportionnal to a persistence length
+    rigid if set to true and a local constrain is defined, the monomer will be exaclty at that position
+    """
     
     assert(N > 0)
     
@@ -123,7 +147,7 @@ def generate_from_local_constrain(coords,bond_sizes=[],lconstrain=[],max_trial=1
             
         if len(coords) >= 2 and virtual_lp:
             extent.append(coords[-1][xi] + (coords[-1][xi]-coords[-2][xi]) / norm(coords[-1]-coords[-2]))
-            width.append(virtual_lp)
+            width.append(1./virtual_lp)
         width = np.array(width) * rc
         cm = 1/np.sum(1/width) * np.sum(np.array(extent)/np.array(width))
         
@@ -191,11 +215,5 @@ def generate_next(coords,gconstrain=[],lconstrain=[],max_trial=100,bond_size=1,b
         break
     return pos
   
-
-if __name__ == "__main__":
-    
-    print generate(N=4,type_bead=0,liaison_size={"0-0":1})
-    print generate(N=4,type_bead=[0,1,0,1],liaison_size={"0-0":1,"0-1":2.0})
-    generate(N=100,type_bead=0,liaison_size={"0-0":1})
 
     

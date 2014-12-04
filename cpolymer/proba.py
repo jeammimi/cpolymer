@@ -21,7 +21,10 @@ def init_proba(P,dx,lrange=[0,3.14]):
     norm  = sum( Plist )
     Plist /= norm
     #print "Norm" , norm
-    index = [Plist[0] ]
+    try:
+        index = [Plist[0] ]
+    except:
+        print lrange[0],lrange[1],dx
     for w,xx in enumerate(x[1:]):
         index.append(index[-1] + Plist[w+1] )
     return x,index
