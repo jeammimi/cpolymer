@@ -6,6 +6,7 @@ Created on Fri Nov 28 09:19:38 2014
 """
 import inspect
 from create import one_polymer
+import numpy as np
 class Polymer:
     def __init__(self,**kwargs):
         coords,bonds,type_beads,ids = one_polymer(**kwargs)
@@ -32,6 +33,10 @@ class Polymer:
     def change_coords(self,coords):
         if len(coords) == len(self.coords):
             self.coords = coords
+    @property        
+    def n_beads(self):
+        return len(self.types_beads)
+
         
     def shift(self,add_id=0,add_bond=0,add_angle=0):
         self.ids = [iid + add_id for iid in self.ids]
@@ -67,4 +72,21 @@ class Polymer:
         for aid,typebond,n1,n2,n3 in self.angle:
             Angle.append("%10i%10i%10i%10i%10i\n"%(aid + angle_add, typebond,n1 + id_add,n2 + id_add,n3 + id_add))
         return Atom,Bond,Angle
+    
+    def bond_size(self):
+        return np.sqrt(np.sum((self.coords[1:]-self.coords[:-1])**2,axis=1))
         
+    def unwrap(self,ref,box):
+        for i in range(self.n_beads):
+            for xi in range(3):
+                lxi = (box.tr[xi]-box.bl[xi])/2
+                #print self.coords[i][xi]-ref[xi] , lxi
+                if self.coords[i][xi]-ref[xi] > lxi:
+                    n = round((self.coords[i][xi]-ref[xi])/(2*lxi))
+                    #print "N",n
+                    self.coords[i][xi] -= 2*n*lxi
+                elif self.coords[i][xi]-ref[xi] < -lxi:
+                    n = abs(round((self.coords[i][xi]-ref[xi])/(2*lxi)))
+                    #print "N",n
+                    self.coords[i][xi] += 2*n*lxi
+            ref = self.coords[i]

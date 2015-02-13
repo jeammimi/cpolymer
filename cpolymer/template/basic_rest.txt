@@ -23,7 +23,7 @@ variable namerestfile index $restfile
 lattice fcc 4
 units		lj
 #boundary	f f f
-boundary	s s s
+boundary	p p p
 atom_style	molecular
 log 		log.txt
 read_data	${iname}

@@ -15,8 +15,8 @@ class Constrain:
 class Box(Constrain):
     def __init__(self,bl=[0,0,0],tr=[1,1,1]):
         Constrain.__init__(self)
-        self.bl = bl 
-        self.tr = tr
+        self.bl = np.array(bl)
+        self.tr = np.array(tr)
     def is_inside(self,pt):
         for x1,x2,x in zip(self.bl,self.tr,pt):
             if not(x1< x <x2):
@@ -27,6 +27,13 @@ class Box(Constrain):
         for x1,x2 in zip(self.bl,self.tr):
             p.append((x2-x1)*np.random.rand()+x1)
         return p
+    def rescale(self,v=1):
+        for i in range(3):
+            self.bl[i] *=v
+            self.tr[i] *= v
+    @property
+    def center(self):
+        return self.tr/2 + self.bl/2
 class Sphere(Constrain):
     def __init__(self,position=[0,0,0],radius=1):
         Constrain.__init__(self)
@@ -40,6 +47,10 @@ class Sphere(Constrain):
     def generate(self):
         r = self.radius * np.random.random()
         return self.position + r*generateV()
+    def rescale(self,v=1):
+        for i in range(3):
+            self.position[i] *=v
+        self.radius *= v
 class Point:
     def __init__(self,index=0,position=[0,0,0]):
         self.index = index

@@ -37,7 +37,8 @@ group particle type $particle
 
 dump 10 all dcd $samplingrate ${fname}
 
-read_dump ${namerestfile} 0 x y z  format xyz
+read_data ${namerestfile}   
+#0 x y z  format xyz
 
 #####################################################
 # Equilibration (Langevin dynamics at 5000 K)

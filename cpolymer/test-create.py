@@ -56,6 +56,27 @@ def test_create_mixture_angle_start_angle():
     assert (bonds[0] == [[0,1,0,1],[1,1,1,2]])
     assert (bonds[1] == [[10,1,0,1,2]])
 
+def test_bond_size():
+    box = Box([-100,-100,-100],[400,400,400])
+
+
+    coords,bonds,type_beads,ids = one_polymer(N=400,type_bead=1,liaison={"1-1":[2.0,1]},ptolerance=0,
+                                       type_polymer="linear",start_id=0,lconstrain=[],
+                                       gconstrain=[box],max_trial=300000,rc=0.5,virtual_lp=None,rigid_constrain=True)  
+                                       
+    bonds = np.mean(np.sqrt(np.sum((coords[1:]-coords[:-1])**2,axis=1)))
+    assert(abs(bonds-2)< 0.1)
+    
+def test_bond_size_angle():
+    box = Box([-100,-100,-100],[400,400,400])
+    
+    coords,bonds,type_beads,ids = one_polymer(N=400,type_bead=1,liaison={"1-1":[1.5,1]},ptolerance=0,
+                                       type_polymer="linear",start_id=0,lconstrain=[],
+                                       gconstrain=[box],max_trial=500000,rc=1,virtual_lp=4,rigid_constrain=False,flexible_lp=True)  
+                                       
+    bonds = np.mean(np.sqrt(np.sum((coords[1:]-coords[:-1])**2,axis=1)))
+    assert(abs(bonds-1.5)< 0.1)                                       
+                                       
 def test_crash():
     PS = [0.2,0.2,0.2]
     PM = [10,10.2,0.2]
@@ -68,7 +89,7 @@ def test_crash():
     box = Box([-10,-10,-10],[400,400,400])
     coords_lp,bonds,type_beads,ids = one_polymer(N=400,type_bead=1,liaison={"1-1":[1.0,1]},ptolerance=0,
                                            type_polymer="linear",start_id=0,lconstrain=[start,middle,end],
-                                           gconstrain=[box],max_trial=500000,rc=0.5,virtual_lp=3,rigid=True)
+                                           gconstrain=[box],max_trial=500000,rc=0.5,virtual_lp=3,rigid_constrain=True)
 
 def test_create_mixture_angle_start_angle_start_id():
     coords,bonds,type_beads,ids = one_polymer(N=3,type_bead=[0,1,0],

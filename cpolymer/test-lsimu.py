@@ -11,21 +11,21 @@ from constrain import Box
 
 def test_generate_interaction():
     Simu = LSimu()
-    Simu.create_ploymers(NP=10,N=100,box=Box([0,0,0],[10,10,10]))
+    Simu.create_polymers(NP=10,N=100,box=Box([0,0,0],[10,10,10]))
     Simu.add_bond(typeb="harmonic",idbond=1,K=80,R0=1)
     Simu.add_pair(typep="lj/cut",idpair1=1,idpair2=1,epsilon=1,sigma=1,cutoff1=1.12)
     
     Simu.generate_interactions("test/interaction")
 def test_lammps_poly_simu():
     Simu = LSimu()
-    Simu.create_ploymers(NP=10,N=100,box=Box([0,0,0],[10,10,10]))
+    Simu.create_polymers(NP=10,N=100,box=Box([0,0,0],[10,10,10]))
     Simu.generate_xyz("test/mix.xyz",Mass="one")
     #Simu.generate_pdb("test/mix.pdb")
     #Simu.generate_script("test/basic.txt",run_size=10)
     #Simu.run
 def test_lammps_poly_add_onep():
     Simu = LSimu()
-    Simu.create_ploymers(NP=10,N=100,box=Box([0,0,0],[10,10,10]))
+    Simu.create_polymers(NP=10,N=100,box=Box([0,0,0],[10,10,10]))
     Simu.add(Polymer(N=1))
     Simu.generate_xyz("test/mix.xyz",Mass="one")   
     Simu.generate_pdb("test/mix.pdb")
@@ -131,17 +131,17 @@ def test_lammps_from_hand_mix_interactions():
     for idl,value in liaison.iteritems(): 
         R0,idbond = value
         idpair1,idpair2=map(int,idl.split("-"))
-        Simu.add_bond(typeb="harmonic",idbond=idbond,K=80,R0=R0)
+        Simu.add_bond(typeb="harmonic",idbond=idbond,K=350,R0=R0)
         Simu.add_pair(typep="lj/cut",idpair1=idpair1,idpair2=idpair2,epsilon=1,sigma=R0,cutoff1=1.15)
         
     Simu.generate_xyz("test/mix.xyz",Mass="one")
     Simu.generate_interactions("test/softinteractions")
     Simu.generate_pdb("test/mix.pdb")
-    Simu.generate_script("test/basic.txt",run_length=1000,samplingrate=10,initconf="test/mix.xyz",outtraj="test/out.dcd",
+    Simu.generate_script("test/basic.txt",run_length=10000,samplingrate=100,initconf="test/mix.xyz",outtraj="test/out.dcd",
                                      outfile="test/final.xyz",interactions="test/softinteractions",particle="1 2")
     Simu.run(script="test/basic.txt")
     
-    box = Box([-5,-5,-5],[15,15,15])
+    box = Box([0,0,0],[10,10,10])
     Simu.add_box(box)
     Simu.clean_interactions()
     for idl,value in liaison.iteritems(): 

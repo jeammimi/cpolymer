@@ -103,13 +103,13 @@ def cell(chrlen,chrcen,Ribopos,lp,Radius,mt,liaison,angle_def,angle_bond):
                 nucleole = Point(index=cm_nuc,position=(0.66*Radius,0,0))
                 lconstrain=[start,middle,nucleole,end]
         
-            
+        #print liaison
         list_polymer.append(Polymer(N=length[2],type_bead=type_bead,liaison=liaison,
                                                   angle_bond=angle_bond,
                                                   angle_def=angle_def,
                                                   ptolerance=0,type_polymer="linear",
                                                   lconstrain=lconstrain,gconstrain=[nucleus],
-                                                  max_trial=300000,rc=0.5,virtual_lp=None,rigid=False))
+                                                  max_trial=300000,rc=1.,virtual_lp=None))
                                                   
     
     return list_polymer

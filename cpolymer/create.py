@@ -7,13 +7,13 @@ Created on Tue Nov 18 17:57:56 2014
 import types
 from utils import generateV,norm
 import numpy as np
-from proba import init_proba,generate_point_proba
+from proba import init_proba,init_proba_log,generate_point_proba
 
 def one_polymer(N=2,type_bead=1,liaison={"1-1":[1.0,1]},type_polymer="linear",
                 angle_bond=False,angle_def={"1-1-1":[1.0,1]},
                 start_id=1,start_bond=0,start_angle=0,
                 ptolerance=0,
-                gconstrain=[],lconstrain=[],max_trial=300000,rc=0.5,virtual_lp=None,rigid=True):
+                gconstrain=[],lconstrain=[],max_trial=300000,rc=0.5,virtual_lp=None,rigid_constrain=True,flexible_lp=True):
     """
     Function to generate a polymer chain
     return coordinate list , [bond list,angle list] , type of bead list, list of id of the monomers
@@ -37,7 +37,8 @@ def one_polymer(N=2,type_bead=1,liaison={"1-1":[1.0,1]},type_polymer="linear",
     rc is used to enforce the constrain
     virtual_lp if different of none (Ex 2.0) the rigidity of the initial chain will be increased
     Be carefull the value here won t be proportionnal to a persistence length
-    rigid if set to true and a local constrain is defined, the monomer will be exaclty at that position
+    rigid_constrain if set to true and a local constrain is defined, the monomer will be exaclty at that position
+    flexible_lp: if True and virtual_lp is not None: every max_trial/5 virtual_lp is divided by 1.5
     """
     
     assert(N > 0)
@@ -86,10 +87,12 @@ def one_polymer(N=2,type_bead=1,liaison={"1-1":[1.0,1]},type_polymer="linear",
             angles[nb][1] = angle_def["%i-%i-%i"%(b1,b2,b3)][1]
     
     coords = []
-    coords.append(generate_next(coords,gconstrain=gconstrain,lconstrain = lconstrain,max_trial=max_trial,bond_sizes=bond_sizes,rc=rc,virtual_lp=virtual_lp,rigid=rigid))
+    coords.append(generate_next(coords,gconstrain=gconstrain,lconstrain = lconstrain,max_trial=max_trial,bond_sizes=bond_sizes,rc=rc,
+                                virtual_lp=virtual_lp,rigid_constrain=rigid_constrain,flexible_lp=flexible_lp))
     
     for bond,lbond in zip(bonds,bond_sizes):
-        coords.append(generate_next(coords,gconstrain=gconstrain,lconstrain = lconstrain,max_trial=max_trial,bond_sizes=bond_sizes,rc=rc,virtual_lp=virtual_lp,rigid=rigid))
+        coords.append(generate_next(coords,gconstrain=gconstrain,lconstrain = lconstrain,max_trial=max_trial,bond_sizes=bond_sizes,rc=rc,
+                                    virtual_lp=virtual_lp,rigid_constrain=rigid_constrain,flexible_lp=flexible_lp))
         
     if start_id != 0:
         bonds = [ [bond[0],bond[1],bond[2] + start_id,bond[3] + start_id] for bond in bonds ]
@@ -100,7 +103,7 @@ def one_polymer(N=2,type_bead=1,liaison={"1-1":[1.0,1]},type_polymer="linear",
     return np.array(coords) ,[bonds,angles],type_beads ,ids
 
 
-def generate_from_local_constrain(coords,bond_sizes=[],lconstrain=[],max_trial=100,rc=0.1,virtual_lp=None,rigid=True):
+def generate_from_local_constrain(coords,bond_sizes=[],lconstrain=[],max_trial=100,rc=0.1,virtual_lp=None,rigid_constrain=True):
     pos = []
     
     index_point = len(coords)
@@ -123,7 +126,7 @@ def generate_from_local_constrain(coords,bond_sizes=[],lconstrain=[],max_trial=1
         else:
             start_constrain= None
         
-    if start_constrain is not None and lconstrain[start_constrain].index == index_point and rigid:
+    if start_constrain is not None and lconstrain[start_constrain].index == index_point and rigid_constrain:
         # if a constrain match the index we return the position
         return np.array(lconstrain[start_constrain].position),[]
     
@@ -137,34 +140,55 @@ def generate_from_local_constrain(coords,bond_sizes=[],lconstrain=[],max_trial=1
             for c in lconstrain[start_constrain:]:
                 extent.append(c.position[xi])
                 width.append(np.sum(bond_sizes[index_point:c.index]))
-                if not rigid and width[-1] == 0:
+                if not rigid_constrain and width[-1] == 0:
                     width[-1]=rc
-         
+                elif width[-1] == 0:
+                    width[-1] = 1
+            #print width, "h"
         if coords != []:
             extent.append(coords[-1][xi])
             width.append(bond_sizes[index_point-1])
         #print width,bond_sizes[:10]
             
         if len(coords) >= 2 and virtual_lp:
-            extent.append(coords[-1][xi] + (coords[-1][xi]-coords[-2][xi]) / norm(coords[-1]-coords[-2]))
+            #width[-1] is the bond length
+            extent.append(coords[-1][xi] + width[-1]*(coords[-1][xi]-coords[-2][xi]) / norm(coords[-1]-coords[-2]))
             width.append(1./virtual_lp)
-        width = np.array(width) * rc
-        cm = 1/np.sum(1/width) * np.sum(np.array(extent)/np.array(width))
+
         
-        gauss = lambda x,c,w : np.exp(-(x-c)**2/(2*w))
+        width_quad = np.array(width) #** 2  * rc
+        cm = 1/np.sum(1/width_quad) * np.sum(np.array(extent)/np.array(width_quad))
+        
+        gauss = lambda x,c,w : np.exp(-(x-c)**2/(2*w)) #Not square as we use width_quad
         def Proba(x):
            
             prod = []
-            for pos,w in zip(extent,width):
+            for pos,w in zip(extent,width_quad):
                 
                 prod.append(gauss(x,pos,w=w))
             return np.prod(prod)
-        
+            
+        lngauss = lambda x,c,w : -(x-c)**2/(2*w)
+        def lnProba(x):
+           
+            prod = []
+            for pos,w in zip(extent,width_quad):
+                
+                prod.append(lngauss(x,pos,w=w))
+            return np.sum(prod)
         w = np.min(width)
-        x,index = init_proba(Proba,dx=w/5.,lrange=[cm-4*w,cm+4*w])
-        
+        w = max(1.,w)
+        #print w,cm,extent
+        #print width
+        x,index = init_proba_log(lnProba,dx=w/5.,lrange=[cm-8*w,cm+8*w])
+        #x,index = init_proba(Proba,dx=w/5.,lrange=[cm-4*w,cm+4*w])
+        #print bond_sizes[index_point-1:]
         p = generate_point_proba(x,index)
-       
+        
+        #print width ,width_quad
+        #if coords != []:
+        #    print extent , cm ,coords[-1][xi]
+        #exit()
         
 #        if xi == 0:
 #            #print 
@@ -180,10 +204,11 @@ def generate_from_local_constrain(coords,bond_sizes=[],lconstrain=[],max_trial=1
         redo.append([x,index])
     return np.array(pos),redo
     
-def generate_next(coords,gconstrain=[],lconstrain=[],max_trial=100,bond_size=1,bond_sizes=[],rc=0.1,virtual_lp=None,rigid=True):
+def generate_next(coords,gconstrain=[],lconstrain=[],max_trial=100,bond_size=1,bond_sizes=[],rc=0.1,virtual_lp=None,rigid_constrain=True,flexible_lp=True):
     
     N = 0
-    redo = []
+    redo = []  # The probability densitiy is generated once and then several trial are extracted from it
+    virtual_lp0 = virtual_lp  #virtual_lp0 will be decrease if flexible_lp in True
     while N < max_trial:
         
         if coords == [] and lconstrain == []:
@@ -193,9 +218,14 @@ def generate_next(coords,gconstrain=[],lconstrain=[],max_trial=100,bond_size=1,b
                 pos = np.array(gconstrain[0].generate())
               
         else:
-      
+            if flexible_lp and virtual_lp != None and N != 0 and N % int(max_trial/5) == 0:
+                virtual_lp0 /= 2.
+                redo = []
+                print "Deacreasing virtual_lp to ", virtual_lp0
+                
             if redo == []:
-                pos,redo = generate_from_local_constrain(coords,lconstrain=lconstrain,bond_sizes=bond_sizes,rc=rc,virtual_lp=virtual_lp,rigid=rigid)
+                
+                pos,redo = generate_from_local_constrain(coords,lconstrain=lconstrain,bond_sizes=bond_sizes,rc=rc,virtual_lp=virtual_lp0,rigid_constrain=rigid_constrain)
             else:
                 pos  = np.array( [ generate_point_proba(x,index) for x,index in redo ])
     

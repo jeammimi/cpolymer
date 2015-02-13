@@ -29,10 +29,207 @@ class LSimu:
         self.Angle = []
         self.Pair = []
         self.extra_bond =[]
+        self.level = 0
         #Generate list to define interaction for lammps simulation
         self.clean_interactions()
         
+    def coarse(self,avoid_type=[],root="./cg",nlevel=2,periodic=True,lastcmd="lammps",**args):
+        #Coarse_two_by two:
+        self.Coarse = LSimu(cmd=self.cmd)
+        self.Coarse.level = self.level + 1
+         
+        self.Coarse.box = copy.deepcopy(self.box)
+        self.Coarse.box.rescale(1/2**0.5)
+        Nbead = 0 
+        for nmol,molecule in enumerate(self.molecules):
+            #Coarse by type:
+            nt = [molecule.types_beads[0]]
+            translate=[0]
+            for ix,c in enumerate(molecule.types_beads[1:],1):
+                same_type = ( c  == nt[-1] )
+                
+                correspond_to_only_one_bead = not(len(translate) >= 2 and translate[-1] == translate[-2])
+                #print same_type,correspond_to_only_one_bead,translate,nt
+                if same_type and correspond_to_only_one_bead and c not in avoid_type:
+                    translate.append(len(nt) -1)
+                else:
+                    nt.append(c)
+                    translate.append(len(nt) - 1)
+                    
+            #Compute new CM
+            if periodic:
+                molecule.unwrap(ref=self.box.center,box=self.box)
+            CM = np.zeros((len(nt),3))
+            N = np.zeros(len(nt))
+            for b in translate:
+                CM[b] += molecule.coords[b]
+                N[b] += 1
+            angle_bond = False
+            if molecule.angle != []:
+                angle_bond = True
+            Nbead += len(nt)
+            P = Polymer(N=len(nt),type_bead=nt,gconstrain=[self.Coarse.box],liaison=molecule.liaison,angle_def=molecule.angle_def,angle_bond=angle_bond)
+            #P.change_coords(CM/N[::,np.newaxis]/2**0.5)
+            self.molecules[nmol].translate = [] + translate
+            self.Coarse.add(P)
+        print("At level {0}, {1} segments".format(self.Coarse.level,Nbead))
+        #Take care of the extra bonds
+        newb = []
+        for mol1,mol2,typeb in self.extra_bond:
+            
+            nbt = [[mol1[0],self.molecules[mol1[0]-1].translate[mol1[1]] - 1],
+                                  [mol2[0],self.molecules[mol2[0]-1].translate[mol2[1]] - 1],
+                                     typeb]
+            #When coarse graining extra bond can attach same molecules
+            if nbt not in newb:
+                newb.append(nbt)
+                self.Coarse.add_extra_bond(nbt[0],nbt[1],nbt[2])
+                                     
+        #Try to take care of the interactions
+        for b in self.iBond:
+            self.Coarse.iBond.append(copy.deepcopy(b))
+        for p in self.iPair:
+            self.Coarse.iPair.append(copy.deepcopy(p))
+            if p.typep == "lj/cut":
+                self.Coarse.iPair[-1].args["sigma"] *= 2**(0.33-0.5)
+                if "cutoff1" in self.Coarse.iPair[-1].args:
+                    self.Coarse.iPair[-1].args["cutoff1"] *= 2**(0.33-0.5)
 
+            if p.typep == "soft":
+                self.Coarse.iPair[-1].args["A"] *= 2**(0.33-0.5)
+        for a in self.iAngle:
+            self.Coarse.iAngle.append(copy.deepcopy(a))
+            self.Coarse.iAngle[-1].args["K"] /= 2**0.5
+        
+       
+        
+        self.Coarse.Mass = self.Mass
+        self.Coarse.info_bond = self.info_bond
+        self.Coarse.info_pair = self.info_pair
+        self.Coarse.natom = self.natom
+        
+        rep = "{0}_{1}".format(root,self.Coarse.level)
+        if not os.path.exists(rep):
+            os.mkdir(rep)
+            
+            
+        if self.Coarse.level != nlevel:
+            self.Coarse.coarse(avoid_type=avoid_type,root=root,nlevel=nlevel,**args)
+        #else:
+        #    self.Coarse.cmd=lastcmd
+            
+        #Generate_xyz
+        initconf = rep+"/in.xyz"
+       
+        
+        
+        self.Coarse.generate_xyz(initconf,Mass=self.Mass)
+        #Generate_interactions
+        pdb = rep +"/in.pdb"
+        self.Coarse.generate_pdb(pdb)
+
+        interactions = rep+"/interactions"
+        self.Coarse.generate_interactions(interactions,info_bond = self.info_bond,info_pair=self.info_pair)
+        #Generate_script
+        outfile = rep+"/out.xyz"
+        outtraj= rep + "/out.dcd"
+        script = rep+"/cg.txt"
+        run_length = args.get("run_length",1000)
+        samplingrate = args.get("samplingrate",100)
+        template_name = args.get("template_name","./template/basic.txt")
+        self.Coarse.generate_script(script_name=script,template_name=template_name,
+                                                        run_length=run_length,
+                                                        samplingrate=samplingrate,
+                                                        initconf=initconf,outtraj=outtraj,
+                                                        outfile=outfile,
+                                                        interactions=interactions,
+                                                        particle=" ".join(map(str,range(1,max(self.natom)+1))),
+                                                        **args)
+        #Run
+        self.Coarse.run(script=script)
+        
+        self.reassign_from_coarse(outfile,periodic=periodic)
+        
+    def assign_from_lammps(self,name,unwrap=False):
+        coords = self.read_from_lammps(name)
+        
+        start = 0
+        for molc,molecule in enumerate(self.molecules):
+            self.molecules[molc].coords = coords[start:start+len(molecule.coords)]
+            if unwrap:
+                #print self.box.tr
+                self.molecules[molc].unwrap(ref=self.box.center,box=self.box)
+            start += len(molecule.coords)
+                
+    def reassign_from_coarse(self,outfile,periodic):
+        
+        self.Coarse.assign_from_lammps(outfile,unwrap=periodic)
+        
+         
+            
+        for nmol,(molecule,cmolecule) in enumerate(zip(self.molecules,self.Coarse.molecules)):
+            #Get reverse mapping
+            
+            cmolecule.rtranslate = [[] for i in range(len(cmolecule.types_beads))]
+            
+            for i in range(len(molecule.types_beads)):
+                cmolecule.rtranslate[molecule.translate[i]].append(i)
+            #print cmolecule.rtranslate
+            #Then assign position
+            for molc,mapping in enumerate(cmolecule.rtranslate):
+                if len(mapping) == 1:
+                    self.molecules[nmol].coords[mapping[0]] = cmolecule.coords[molc]
+                elif len(mapping) == 2:
+                    if len(cmolecule.types_beads) == 1:
+                        self.molecules[nmol].coords[mapping[0]] = cmolecule[molc].coords +np.random.rand(3)
+                        self.molecules[nmol].coords[mapping[1]] = cmolecule[molc].coords +np.random.rand(3)
+                    else:
+                        if molc == 0:
+                            t = cmolecule.coords[molc+1]-cmolecule.coords[molc]
+                            l =  np.sqrt(np.sum(t**2))
+                            if l == 0:
+                                l = 1
+                            t /= l
+                            t0=t
+                            t1 = t
+                        elif molc == len(cmolecule.types_beads) - 1:
+                            t = cmolecule.coords[molc]-cmolecule.coords[molc-1]
+                            l =  np.sqrt(np.sum(t**2))
+                            if l == 0:
+                                l = 1
+                            t /= l
+                            t0 = t
+                            t1=t
+                        else:
+                            t1 = cmolecule.coords[molc+1]-cmolecule.coords[molc]
+                            l =  np.sqrt(np.sum(t1**2))
+                            if l == 0:
+                                l = 1
+                            t1 /= l
+                            t0 = cmolecule.coords[molc]-cmolecule.coords[molc-1]
+                            l =  np.sqrt(np.sum(t0**2))
+                            if l == 0:
+                                l = 1
+                            t0 /= l
+                            
+                        #print molc, l , cmolecule.coords[molc] - 0.3*l*t0 , cmolecule.coords[molc] + 0.3*l*t1
+                        self.molecules[nmol].coords[mapping[0]] = cmolecule.coords[molc] - 0.25*l*t0
+                        self.molecules[nmol].coords[mapping[1]] = cmolecule.coords[molc] + 0.25*l*t1
+                            
+                else:
+                    print("something went wrong")
+                    
+            self.molecules[nmol].coords *= 2**0.5
+            
+            #Check it is inside the box
+            if not periodic:
+                for p in self.molecules[nmol].coords:
+                    if not self.box.is_inside(p):
+                        print "Mol not in the box"
+                        raise
+            else:
+                #Should rewrap?
+                pass
     def add(self,molecule):
         """
         add a molecule and take care of shifting the ids bonds
@@ -63,6 +260,8 @@ class LSimu:
         molecule.shift(add_id,add_bond,add_angle)
         self.molecules.append(molecule)
         
+        
+        
     def add_bond(self,**bond):
         """
         Adding bond interaction information:
@@ -80,7 +279,7 @@ class LSimu:
     def add_box(self,box):
         self.box = box
         
-    def create_ploymers(self,NP,**kwargs):
+    def create_polymers(self,NP,**kwargs):
         """ 
         create NP polymers
         All the option to cleate a polymer are defined in the function
@@ -103,7 +302,25 @@ class LSimu:
         for p in range(NP):
             self.add(Polymer(**kwargs))
         
-    
+    def read_from_lammps(self,from_lammps_xyz):
+        coords = []
+        with open(from_lammps_xyz,"r") as f:
+            for line in f:
+                
+                if line.startswith("Atoms"):
+                    for line in f:
+                        if line != "\n":
+                            coords.append(map(float,line.split()[:6]))
+                        else:
+                            if coords != []:
+                                break
+                if coords != []:
+                    break
+          
+            coords.sort()
+            coords = np.array(coords)
+            coords = coords[:,3:6]
+        return coords
     def generate_xyz(self,xyz_name,Mass=None,from_lammps_xyz=None):
         """
         Generate xyz file to be read by lammps as an input file
@@ -127,28 +344,15 @@ class LSimu:
         self.Atom, self.Bond, self.Angle = [],[],[]
         coords = []
         if from_lammps_xyz is not None:
-            
-            with open(from_lammps_xyz,"r") as f:
-                for line in f:
-                    if line.startswith("Atoms"):
-                        for line in f:
-                            if line != "\n":
-                                coords.append(map(float,line.split()[:6]))
-                            else:
-                                if coords != []:
-                                    break
-                    if coords != []:
-                        break
-            coords.sort()
-            coords = np.array(coords)
-            coords = coords[:,3:6]
+            coords = self.read_from_lammps(from_lammps_xyz)
+           
         self.liaison = None
         self.angle_def = None
         self.natom = set()
         
         for molecule in self.molecules:
             if coords != []:
-                molecule.change_coords(coords[start_id - 1:len(molecule.ids)])
+                molecule.change_coords(coords[start_id - 1:start_id - 1 + len(molecule.ids)])
             #still assigning a start_id but it should already be correct
             Atom,Bond,Angle = molecule.get_xyz(start_id=start_id,start_bond=start_bond,start_angle=start_angle)
             start_id += len(Atom) 
@@ -218,7 +422,7 @@ class LSimu:
         elif Mass == None:
             print "Must set mass to one to give all atoms mass one or specify a mass for each atoms"
             raise
-            
+        self.Mass = Mass
         f.write("\n".join([ "         %i          %.1f"%(i,Mass["%i"%(i)]) for i in range(1,max(self.natom)+1)  ]))
         f.write("\nAtoms\n\n%s\n"%("".join(self.Atom)))
         f.write("Bonds\n\n%s\n"%("".join(self.Bond)))
@@ -290,6 +494,8 @@ class LSimu:
         
     def generate_interactions(self,interaction_name,info_bond=[],info_pair=[],write=True,sort=True):
         
+        self.info_bond = info_bond
+        self.info_pair = info_pair
         typeb = set([bond.typeb for bond in self.iBond])
         hybrid =""
         if len(typeb) > 1:
@@ -323,6 +529,12 @@ class LSimu:
             maxcut = max([pair.args.get("cutoff1",0) for pair in self.iPair ])
             self.Pair_interaction = ["pair_style lj/cut {0:.2f}".format(maxcut)]
             self.Pair_interaction.append("pair_modify shift yes")
+            
+        if len(typep) == 1 and list(typep)[0] == "soft":
+            maxcut = max([pair.args.get("cutoff",0) for pair in self.iPair ])
+            self.Pair_interaction = ["pair_style soft {0:.2f}".format(maxcut)]
+           
+            
             
         self.Pair_interaction.extend(info_pair)
         
