@@ -7,9 +7,9 @@ Created on Mon Dec  1 15:24:01 2014
 description_pair = {"lj/cut":{"template":"{epsilon:.2f} {sigma:.2f} {cutoff1:.2f}",
                                 "required":["idpair1","idpair2","epsilon","sigma"],
                                 "optional":{"cutoff1":""}},
-                    "soft":{"template":"{A:.2f} {cutoff:.2f}",
+                    "soft":{"template":"{A:.2f} {rc:.2f}",
                                                     "required":["idpair1","idpair2","A"],
-                                                    "optional":{"cutoff":""}}
+                                                    "optional":{"rc":""}}
                     }
                     
 

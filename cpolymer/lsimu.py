@@ -438,7 +438,7 @@ class LSimu:
         """
         self.extra_bond.append([mol1,mol2,typeb])
     
-    def generate_pdb(self,pdb_name,shift=0,traduction={"1":"bead","2":"telo","3":"ribo","4":"cent","5":"spbb","6":"rcut"}):
+    def generate_pdb(self,pdb_name,shift=0,traduction={"1":"bead","2":"telo","3":"ribo","4":"cent","5":"spbb","6":"rcut","7":"scut"}):
         """
         Generate a pdb file according to the molecules given to the LSimu object
         traduction must contain as key the type of bead and as item the pdb name
@@ -491,6 +491,8 @@ class LSimu:
         self.iBond = []
         self.iPair = []
         self.iAngle = []
+        
+        
         
     def generate_interactions(self,interaction_name,info_bond=[],info_pair=[],write=True,sort=True):
         

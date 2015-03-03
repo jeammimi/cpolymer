@@ -40,11 +40,8 @@ def init_proba_log(P,dx,lrange=[0,3.14]):
     
     Plist  = np.array([P(xx)  for xx in x])
     #print Plist
-    try:
-        Plist -= max(Plist)
-    except:
-        print x,Plist
-        raise
+    
+    Plist -= max(Plist)
     Plist = np.exp(Plist)
     #print Plist
     

@@ -46,7 +46,7 @@ def get_ref_points(snucleus,smicrotubule,l_len_p=[]):
         res_start.append(res)
     return res_start
     
-def cell(chrlen,chrcen,Ribopos,lp,Radius,mt,liaison,angle_def,angle_bond):
+def cell(chrlen,chrcen,Ribopos,lp,Radius,mt,liaison,angle_def,angle_bond,special=[]):
     """
     chrlen and chrcen are in monomere unit
     Ribopos also
@@ -71,17 +71,18 @@ def cell(chrlen,chrcen,Ribopos,lp,Radius,mt,liaison,angle_def,angle_bond):
     nucleus = Sphere(position=[0,0,0],radius=Radius)
 
     list_polymer = []
-    for chromosome,(rep,length) in enumerate(zip(Refs,chn)):
+    for chromosome,(rep,length,spe) in enumerate(zip(Refs,chn,special)):
         #print chromosome,length,chl[chromosome]
         #,rep
         #print Radius,mt
         
         #print start,middle,end
         type_bead = [1 for n in range(length[2])]
-        if rep != None:
-            #dangling chromosome    
-            type_bead[0] = type_bead[-1] = 2
-            type_bead[length[0]] = 4
+        
+        for special_beads in spe: 
+           [P,T] = special_beads
+           type_bead[P] = T
+               
             
         for ch,insert,rlength in Ribopos:
             if chromosome == ch-1:
@@ -109,7 +110,8 @@ def cell(chrlen,chrcen,Ribopos,lp,Radius,mt,liaison,angle_def,angle_bond):
                                                   angle_def=angle_def,
                                                   ptolerance=0,type_polymer="linear",
                                                   lconstrain=lconstrain,gconstrain=[nucleus],
-                                                  max_trial=300000,rc=1.,virtual_lp=None))
+                                                  max_trial=300000,rc=1.,virtual_lp=None,
+                                                  rigid_constrain=False))
                                                   
     
     return list_polymer
