@@ -16,3 +16,13 @@ http://nbviewer.ipython.org/github/jeammimi/cpolymer/blob/master/notebook/polyme
 Finally a little bit of fun with the creation of a polymeric eiffel tower 
 
 http://nbviewer.ipython.org/github/jeammimi/cpolymer/blob/master/notebook/cpolymer_eiffel_demo.ipynb
+
+
+How to create a simple nucleus
+
+http://nbviewer.ipython.org/github/jeammimi/cpolymer/blob/master/notebook/Simple-nucleus.ipynb
+
+How to create a Yeast nucleus
+
+http://nbviewer.ipython.org/github/jeammimi/cpolymer/blob/master/notebook/Yeast-Nucleus.ipynb
+

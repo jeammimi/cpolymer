@@ -321,6 +321,43 @@ class LSimu:
             coords = np.array(coords)
             coords = coords[:,3:6]
         return coords
+    def get_atoms_bonds_angles(self,from_lammps_xyz=None):
+        start_id = 1
+        start_bond = 0
+        start_angle = 0
+        Atoms, Bonds, Angles,lengths = [],[],[],[]
+        coords =[]
+        if from_lammps_xyz is not None:
+            coords = self.read_from_lammps(from_lammps_xyz)
+           
+           
+  
+      
+        for molecule in self.molecules:
+            if coords != []:
+                molecule.change_coords(coords[start_id - 1:start_id - 1 + len(molecule.ids)])
+            #still assigning a start_id but it should already be correct
+            Atom,Bond,Angle = molecule.get_atoms_bonds_angle(start_id=start_id,start_bond=start_bond,start_angle=start_angle)
+            lengths.append(len(Atom))
+            start_id += len(Atom) 
+            start_bond += len(Bond)
+            start_angle += len(Angle)
+            Atoms.extend(Atom)
+            Bonds.extend(Bond)
+            Angles.extend(Angle)
+            
+         
+                
+        #Extra bonds:
+        for mol1,mol2,typeb in self.extra_bond:
+            absolute1 = self.molecules[mol1[0]-1].ids[mol1[1]-1]
+            absolute2 = self.molecules[mol2[0]-1].ids[mol2[1]-1]
+            bid = len(Bonds)
+            Bonds.append("%10i%10i%10i%10i\n"%(bid, typeb, absolute1 , absolute2 ))
+               
+        
+        return Atoms,Bonds,Angles,lengths
+    
     def generate_xyz(self,xyz_name,Mass=None,from_lammps_xyz=None):
         """
         Generate xyz file to be read by lammps as an input file
@@ -354,7 +391,7 @@ class LSimu:
             if coords != []:
                 molecule.change_coords(coords[start_id - 1:start_id - 1 + len(molecule.ids)])
             #still assigning a start_id but it should already be correct
-            Atom,Bond,Angle = molecule.get_xyz(start_id=start_id,start_bond=start_bond,start_angle=start_angle)
+            Atom,Bond,Angle = molecule.get_xyz_format_lammps(start_id=start_id,start_bond=start_bond,start_angle=start_angle)
             start_id += len(Atom) 
             start_bond += len(Bond)
             start_angle += len(Angle)

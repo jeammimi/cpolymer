@@ -46,12 +46,27 @@ class Polymer:
     def get_types_beads(self):
         return set(self.types_beads)
     
-    def get_xyz_extrabond(self,start_bond):
-        Bond = []
-        for bid,typebond,n1,n2 in self.extrabond:
-            Bond.append("%10i%10i%10i%10i\n"%(bid + start_bond, typebond, n1 , n2 ))
-        return Bond
-    def get_xyz(self,start_id=1,start_bond=0,start_angle=0):#,start_dihedral=0):
+    def get_atoms_bonds_angle(self,start_id=1,start_bond=0,start_angle=0):
+        id_add = start_id - self.ids[0]
+        bond_add = 0
+        if self.bond != []:
+            bond_add = start_bond - self.bond[0][0]
+        angle_add = 0
+        if self.angle != []:
+            angle_add = start_angle - self.angle[0][0]
+        #dihedral_add = start_bond - self.bond[0][0]
+        Atoms,Bonds,Angles = [],[],[]
+        
+        for ids,pos,name in zip(self.ids,self.coords,self.types_beads):
+            X,Y,Z = pos
+            Atoms.append([ids+id_add, name,X,Y,Z])
+        for bid,typebond,n1,n2 in self.bond:
+            Bonds.append([bid + bond_add, typebond, n1 + id_add, n2 + id_add])
+        for aid,typebond,n1,n2,n3 in self.angle:
+            Angles.append([aid + angle_add, typebond,n1 + id_add,n2 + id_add,n3 + id_add])
+        return Atoms,Bonds,Angles
+    
+    def get_xyz_format_lammps(self,start_id=1,start_bond=0,start_angle=0):#,start_dihedral=0):
         
         #Must set the id of the atom to the start_id
         id_add = start_id - self.ids[0]
