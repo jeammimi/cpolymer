@@ -5,6 +5,15 @@ Library to create polymer path with given functionnality, such as
 some constrain on the position of any monomer.
 It is also possible to create polymer with some rigidity
 
+To install
+=======
+
+The easiest way:
+sudo pip install cpolymer
+
+Example of uses
+=======
+
 Here I show how to use the module to creato a block copolymer system:
 
 http://nbviewer.ipython.org/github/jeammimi/cpolymer/blob/master/notebook/cpolymer_demo.ipynb
