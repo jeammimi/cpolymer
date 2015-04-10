@@ -1,0 +1,103 @@
+################################
+#Template
+#Must contain the variables
+#  typecell 
+#  outtraj
+#  outfile
+#  interaction
+#  run_length
+#  samplingrate
+#  particle
+
+# VARIABLES
+variable typecell index $typecell
+variable fname index ${typecell}conf2.txt    # configuration initiale
+variable simname index test
+
+
+#package cuda override/bpa 1
+
+
+# Initialization
+#correspond to x=y=z=1
+lattice fcc 4
+units		lj
+boundary	f f f
+atom_style	molecular
+log 		log.${simname}.txt
+read_data	${fname}
+
+
+
+neighbor 2.0 multi
+comm_modify cutoff 30.0
+
+
+include $interaction
+include variables
+
+
+#####################################################
+# Equilibration (Langevin dynamics at 5000 K)
+
+group telo type 2
+group norm type 1 2 4 6 7
+group ribo type 3
+group centro type 4
+group spb  type 5
+group particle type 1 2 3 4 6 7
+compute hic particle pair/local dist
+compute hicp particle property/local patom1 patom2
+
+
+
+dump 		init all dcd $samplingrate $outtraj.${typecell}.comp.dcd
+
+
+
+###########################################################
+#Definiton of nucleus and its interaction
+#the telomere part is added when the nuceus has the right size
+
+variable rad equal ${frad}
+
+region mySphere sphere 0.0 0.0 0.0 v_rad side in
+
+fix wall1 norm wall/region mySphere lj126 ${eNorm} ${sigNorm} ${sigNormCut} 
+fix wall2 ribo wall/region mySphere lj126 ${eRibo} ${sigRibo} ${sigRiboCut}
+fix wall telo wall/region mySphere  lj93  ${etelo} ${sigtelo} ${cuttelo}
+
+
+velocity 	particle create 1.0 1231
+
+variable rad equal ramp($SRadius,$Radius)
+
+include $softinteractions
+fix		1 particle nve/limit 0.0005
+fix		lang particle langevin 1.0 1.0 ${damp} 904297
+run 200000
+unfix 1
+unfix lang
+
+include $interaction
+fix		1 particle nve/limit 0.0005
+fix		lang particle langevin 1.0 1.0 ${damp} 904297
+run 200000
+
+unfix 1
+unfix lang
+
+thermo_style	custom step temp 
+thermo          10000
+fix		1 particle nve/limit 0.05
+fix		addscale particle langevin 1.0 1.0  ${damp} 904297  scale 3 ${isigrDNA}
+timestep	0.0025 
+run		$run_length
+
+
+write_data $outfile
+
+include scenari
+
+
+#####################################################

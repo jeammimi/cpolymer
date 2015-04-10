@@ -1,7 +1,9 @@
 from setuptools import setup
+files = ["template/*",
+         "halley/*"]
 
 setup(name='cpolymer',
-      version='0.1',
+      version='0.3',
       description='Creating initial configuration for polymer (to work with lammps)',
       url='https://github.com/jeammimi/cpolymer',
       author='Jean-michel Arbona',

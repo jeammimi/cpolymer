@@ -1,0 +1,44 @@
+variable iname index $initconf    
+variable fname index $outtraj
+variable interactions index $interactions
+
+
+# Initialization
+#correspond to x=y=z=1
+lattice fcc 4
+units		lj
+#boundary	f f f
+boundary	p p p
+atom_style	molecular
+log 		log.txt
+read_data	${iname}
+
+neighbor 0.3 bin
+comm_modify cutoff 2
+#########################
+#Interactions
+
+include ${interactions}
+group particle type $particle
+
+dump 10 all dcd $samplingrate ${fname}
+
+
+#####################################################
+# Equilibration (Langevin dynamics at 5000 K)
+
+velocity 	particle create 1.0 1231
+fix		1 particle nve/limit 0.05
+fix		addscale particle langevin 1.0 1.0  1 904297  
+
+
+thermo_style	custom step temp 
+thermo          10000
+timestep	0.005 
+run $run_length
+
+#####################################################
+
+write_data $outfile
+
+
