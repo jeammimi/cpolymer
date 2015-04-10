@@ -437,11 +437,21 @@ class Circular (Constraint):
             x0 = V(-self.normal[1],self.normal[0],0)
         else:
             x0 = V(-self.normal[2],0,self.normal[0])
+        x0 = x0.normalize()
+        self.normal = self.normal.normalize()
         x1 = self.normal.cross(x0)
         alpha = 2*math.pi*random.random()
         return self.point + self.radius * ( x0 * math.cos(alpha) + x1 * math.sin(alpha))        
-        
-
+    def generate_N(self,N):
+        if self.normal[0] != 0 or self.normal[1] != 0:
+            x0 = V(-self.normal[1],self.normal[0],0)
+        else:
+            x0 = V(-self.normal[2],0,self.normal[0])
+        x0 = x0.normalize()
+        self.normal = self.normal.normalize()
+        x1 = self.normal.cross(x0)
+        alphas = [ (2*3.1415*i)/N for i in range(N) ]
+        return [self.point + self.radius * ( x0 * math.cos(alpha) + x1 * math.sin(alpha)) for alpha in  alphas]
     def combine(self, other):
         "Circular versus another constraint gives Unity, Duality or Nowhere."
         if isinstance(other, Anywhere): return self
@@ -625,6 +635,13 @@ class Spherical (Constraint):
     def __repr__(self):
         return "Spherical" + repr((self.point, self.radius))
 
+    def get_random(self):
+        
+        phi = 2*math.pi*random.random()
+        theta = math.pi*random.random()
+        return self.point + self.radius * ( V( [math.sin(theta)*math.cos(phi),
+                                                math.sin(theta)*math.sin(phi),
+                                                math.cos(theta)]))
     def combine(self, other):
         "Spherical versus another constraint."
         if isinstance(other, Anywhere): return self
