@@ -7,12 +7,15 @@ Created on Mon Dec  1 15:24:01 2014
 description_bond = {"harmonic":{"template":"{K:.2f} {R0:.2f}",
                                 "required":["idbond","K","R0"]},
                     "fene":{"template":"{K:.2f} {R0:.2f} {epsilon:.2f} {sigma:.2f}",
-                                "required":["idbond","K","R0","epsilon","sigma"]}}
+                                "required":["idbond","K","R0","epsilon","sigma"]},
+                    "fene/expand":{"template":"{K:.2f} {R0:.2f} {epsilon:.2f} {sigma:.2f} {delta:.2f}",
+                                "required":["idbond","K","R0","epsilon","sigma","delta"]}}
 
 class Bond:
     def __init__(self,typeb,hybrid=False,**args):
         self.typeb = typeb
         if typeb not in description_bond.keys():
+            print typeb + "not described"
             raise typeb + "not described"
         self.args = args
         self.hybrid = hybrid

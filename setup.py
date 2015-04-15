@@ -3,7 +3,7 @@ files = ["template/*",
          "halley/*"]
 
 setup(name='cpolymer',
-      version='0.33',
+      version='0.34',
       description='Creating initial configuration for polymer (to work with lammps)',
       url='https://github.com/jeammimi/cpolymer',
       author='Jean-michel Arbona',

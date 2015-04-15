@@ -569,6 +569,13 @@ class LSimu:
             self.Pair_interaction = ["pair_style lj/cut {0:.2f}".format(maxcut)]
             self.Pair_interaction.append("pair_modify shift yes")
             
+        if len(typep) == 1 and list(typep)[0] == "lj/expand":
+            #print "nthnthnt"
+            #raise
+            maxcut = max([pair.args.get("cutoff1",0) for pair in self.iPair ])
+            self.Pair_interaction = ["pair_style lj/expand {0:.2f}".format(maxcut)]
+            self.Pair_interaction.append("pair_modify shift yes")
+            
         if len(typep) == 1 and list(typep)[0] == "soft":
             maxcut = max([pair.args.get("cutoff",0) for pair in self.iPair ])
             self.Pair_interaction = ["pair_style soft {0:.2f}".format(maxcut)]
