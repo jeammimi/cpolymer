@@ -460,9 +460,10 @@ class LSimu:
             print "Must set mass to one to give all atoms mass one or specify a mass for each atoms"
             raise
         self.Mass = Mass
-        f.write("\n".join([ "         %i          %.1f"%(i,Mass["%i"%(i)]) for i in range(1,max(self.natom)+1)  ]))
+        f.write("\n".join([ "         %i          %.3f"%(i,Mass["%i"%(i)]) for i in range(1,max(self.natom)+1)  ]))
         f.write("\nAtoms\n\n%s\n"%("".join(self.Atom)))
-        f.write("Bonds\n\n%s\n"%("".join(self.Bond)))
+        if self.Bond != []:
+            f.write("Bonds\n\n%s\n"%("".join(self.Bond)))
         if self.Angle != []:
             f.write("Angles\n\n%s\n"%("".join(self.Angle)))
         f.close()

@@ -45,6 +45,64 @@ def get_ref_points(snucleus,smicrotubule,l_len_p=[]):
         res[0],res[1] = res[1],res[0]
         res_start.append(res)
     return res_start
+
+def one_circular(chrlen,chrcen,Ribopos,lp,Radius,mt,liaison,angle_def,angle_bond,special=[]):
+    """
+    chrlen and chrcen are in monomere unit
+    Ribopos also
+    lp also
+    """
+    chl = []
+    chn = []
+    for l,cen in zip(chrlen,chrcen):
+        if cen == None:
+            chl.append(None)
+            chn.append([None,None,l])
+        else:
+            fact = 16
+            
+            chl.append([np.sqrt(2*fact*lp**2*cen),np.sqrt(2*fact*lp**2*(l-cen))])
+            chn.append([cen,(l-cen),l])
+    chl = np.array(chl)
+      #print liaison
+
+    nucleus = Sphere(position=[0,0,0],radius=Radius)
+
+    list_polymer = []
+    for chromosome,(length,spe) in enumerate(zip(chn,special)):
+        #print chromosome,length,chl[chromosome]
+        #,rep
+        #print Radius,mt
+        
+        #print start,middle,end
+        type_bead = [1 for n in range(length[2])]
+        
+        for special_beads in spe: 
+           [P,T] = special_beads
+           type_bead[P] = T
+               
+            
+       
+        
+        x,y,z = 1-2*np.random.rand(3)
+        r = np.random.rand()
+        r = r*Radius /4.
+        norm = r/np.sqrt(x**2+y**2+z**2) 
+        start = Point(index=0,position=(x/norm,y/norm,z/norm))
+        end = Point(index=length[2],position=(x/norm,y/norm,z/norm))
+        lconstrain=[start,end]
+      
+        #print liaison
+        list_polymer.append(Polymer(N=length[2],type_bead=type_bead,liaison=liaison,
+                                                  angle_bond=angle_bond,
+                                                  angle_def=angle_def,
+                                                  ptolerance=0,type_polymer="circular",
+                                                  lconstrain=lconstrain,gconstrain=[nucleus],
+                                                  max_trial=300000,rc=1.,virtual_lp=None,
+                                                  rigid_constrain=False))
+                                                  
+    
+    return list_polymer
     
 def cell(chrlen,chrcen,Ribopos,lp,Radius,mt,liaison,angle_def,angle_bond,special=[]):
     """

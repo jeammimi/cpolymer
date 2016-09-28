@@ -59,7 +59,18 @@ def one_polymer(N=2,type_bead=1,liaison={"1-1":[1.0,1]},type_polymer="linear",
             if N >=3:
                 angles = [[start_angle + i,0,i,i+1,i+2] for i in range(N - 2)]
           
-               
+    if type_polymer == "circular":
+        bonds = [[start_bond + i,0,i, i+1] for i in range(N )] 
+        bonds[-1][-1] = 0
+        angles = []
+        if angle_bond:
+            if N >=3:
+                angles = [[start_angle + i,0,i,i+1,i+2] for i in range(N )]
+                
+                angles[-1][-2] = 1
+                angles[-1][-1] = 0
+                angles[-2][-1] = 0
+                
     assert(len(type_beads) == N)
     
    

@@ -35,3 +35,7 @@ How to create a Yeast nucleus
 
 http://nbviewer.ipython.org/github/jeammimi/cpolymer/blob/master/notebook/Yeast-Nucleus.ipynb
 
+How to create a Yeast nucleus with a persistence length and dumping hic
+
+http://nbviewer.ipython.org/github/jeammimi/cpolymer/blob/master/notebook/Yeast-Nucleus-persistence.ipynb
+
