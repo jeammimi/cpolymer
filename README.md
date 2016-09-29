@@ -5,6 +5,10 @@ Library to create polymer path with given functionnality, such as
 some constrain on the position of any monomer.
 It is also possible to create polymer with some rigidity
 
+What can be achieved with it:
+
+https://www.youtube.com/watch?v=iwep58wIsuU
+
 To install
 =======
 
@@ -26,14 +30,6 @@ Finally a little bit of fun with the creation of a polymeric eiffel tower
 
 http://nbviewer.ipython.org/github/jeammimi/cpolymer/blob/master/notebook/cpolymer_eiffel_demo.ipynb
 
-Here is the video from the last notebook!
-
-https://www.youtube.com/watch?v=iwep58wIsuU
-
-Here is the video for the last notebook.
-https://www.youtube.com/watch?v=iwep58wIsuU
-
-
 How to create a simple nucleus
 
 http://nbviewer.ipython.org/github/jeammimi/cpolymer/blob/master/notebook/Simple-nucleus.ipynb
@@ -49,4 +45,9 @@ http://nbviewer.ipython.org/github/jeammimi/cpolymer/blob/master/notebook/Yeast-
 How to create a Yeast and make it replicate!
 
 http://nbviewer.ipython.org/github/jeammimi/cpolymer/blob/master/notebook/Cell_division.ipynb
+
+
+Here is the video from the last notebook!
+
+https://www.youtube.com/watch?v=iwep58wIsuU
 
