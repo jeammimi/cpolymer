@@ -26,6 +26,10 @@ Finally a little bit of fun with the creation of a polymeric eiffel tower
 
 http://nbviewer.ipython.org/github/jeammimi/cpolymer/blob/master/notebook/cpolymer_eiffel_demo.ipynb
 
+Here is the video from the last notebook!
+
+https://www.youtube.com/watch?v=iwep58wIsuU
+
 Here is the video for the last notebook.
 https://www.youtube.com/watch?v=iwep58wIsuU
 
