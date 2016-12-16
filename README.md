@@ -1,3 +1,16 @@
+Inferring the physical properties of yeast chromatin through Bayesian analysis of whole nucleus simulations
+=======
+
+This notebook explain how to create an initial configuration for the Yeast nucleus, how to set a persistence length 
+and how to run the simulation.
+The simulations will generate a trajectory file and also dumps the contact to compute hic
+matrices
+
+http://nbviewer.ipython.org/github/jeammimi/cpolymer/blob/master/notebook/Yeast-Nucleus-persistence.ipynb
+
+
+In the following we detail all the other possibilities of this library
+
 cpolymer
 ========
 
