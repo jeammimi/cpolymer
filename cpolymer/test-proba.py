@@ -5,7 +5,7 @@ Created on Tue Nov 25 09:00:06 2014
 @author: jarbona
 """
 import numpy as np
-from proba import init_proba,generate_point_proba,init_proba_log
+from .proba import init_proba,generate_point_proba,init_proba_log
 
 def test_proba():
     p = lambda x,c,w : np.exp(-(x-c)**2/(2*w**2))
@@ -14,8 +14,8 @@ def test_proba():
     
     pts = np.array([generate_point_proba(x,index) for i in range(100000)])
     
-    print pts.mean()
-    print pts.std()
+    print((pts.mean()))
+    print((pts.std()))
     assert(abs(pts.mean()-1) < 0.1)
     assert(abs(pts.std()-2) < 0.1)
     
@@ -29,7 +29,7 @@ def test_proba_log():
     
     pts = np.array([generate_point_proba(x,index) for i in range(100000)])
     
-    print pts.mean()
-    print pts.std()
+    print((pts.mean()))
+    print((pts.std()))
     assert(abs(pts.mean()-1) < 0.1)
     assert(abs(pts.std()-2) < 0.1)

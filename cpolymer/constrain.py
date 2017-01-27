@@ -5,7 +5,7 @@ Created on Tue Nov 25 09:17:44 2014
 @author: jarbona
 """
 import numpy as np
-from utils import norm, generateV
+from .utils import norm, generateV
 class Constrain:
     def __init__(self):
         pass

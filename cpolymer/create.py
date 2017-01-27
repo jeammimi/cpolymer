@@ -5,9 +5,9 @@ Created on Tue Nov 18 17:57:56 2014
 @author: jarbona
 """
 import types
-from utils import generateV,norm
+from .utils import generateV,norm
 import numpy as np
-from proba import init_proba,init_proba_log,generate_point_proba
+from .proba import init_proba,init_proba_log,generate_point_proba
 
 def one_polymer(N=2,type_bead=1,liaison={"1-1":[1.0,1]},type_polymer="linear",
                 angle_bond=False,angle_def={"1-1-1":[1.0,1]},
@@ -45,7 +45,7 @@ def one_polymer(N=2,type_bead=1,liaison={"1-1":[1.0,1]},type_polymer="linear",
     
     ids = [i for i in range(N)]
     
-    if type(type_bead) == types.IntType:
+    if type(type_bead) == int:
         type_beads = [type_bead for i in range(N)]
     else:
         type_beads = type_bead
@@ -232,7 +232,7 @@ def generate_next(coords,gconstrain=[],lconstrain=[],max_trial=100,bond_size=1,b
             if flexible_lp and virtual_lp != None and N != 0 and N % int(max_trial/5) == 0:
                 virtual_lp0 /= 2.
                 redo = []
-                print "Deacreasing virtual_lp to ", virtual_lp0
+                print(("Deacreasing virtual_lp to ", virtual_lp0))
                 
             if redo == []:
                 
@@ -250,8 +250,9 @@ def generate_next(coords,gconstrain=[],lconstrain=[],max_trial=100,bond_size=1,b
             N += 1
                     
             if N == max_trial-1:
-                print coords
-                raise "constrain not satisfied"
+                print(coords)
+                print("constrain not satisfied")
+                raise 
             continue 
         break
     return pos

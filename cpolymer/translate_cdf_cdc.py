@@ -4,7 +4,7 @@ Created on Tue Apr 23 15:20:36 2013
 
 @author: jarbona
 """
-from sortn import sort_nicely
+from .sortn import sort_nicely
 import string
     
 def write_single_pdb(name,chlist,namelist=[],origine=[],extraatom="",allzero=False):
@@ -51,7 +51,7 @@ def write_single_pdb(name,chlist,namelist=[],origine=[],extraatom="",allzero=Fal
         f.write(extraatom)
     Sum=1
     if maxi > 10000 or maxi < 0.0001:
-        print "Scale pb" , maxi 
+        print(("Scale pb" , maxi)) 
         
     f.write("\n")
     for n,(x,y,z,col) in enumerate(chlist):
@@ -168,7 +168,7 @@ if __name__ == "__main__":
         ls = glob.glob(where+'traj*.gz')
         g_step = int(d.split('_')[0][4:])
         write_to = '%s/file_all%010i.dcd'%(where,g_step)
-        print where, s * 1.0 / len(test)
+        print((where, s * 1.0 / len(test)))
         if os.path.exists(write_to) and (not REDO) and not(only_init):
             to_concat.append(write_to)
             continue
@@ -182,7 +182,7 @@ if __name__ == "__main__":
             for p,f in enumerate(ls):
                 if s == 0 and p == 0 and center:
                     origine = read_name(f,rescale=scale)
-                    print scale
+                    print(scale)
                 #try:
                 ch = read_name(f,rescale=scale)
                 """
@@ -201,10 +201,10 @@ if __name__ == "__main__":
 #                except:
 #                    print "Error reading" ,f
                 if s == 0 and p == 0:
-                    print "snssssnssn"
+                    print("snssssnssn")
                     centro_l = return_centro(root+centro,nc=NC)
                     ribo_l = return_ribo(root+ribo,nc=NC)
-                    print ribo_l
+                    print(ribo_l)
                     
                     write_single_pdb(pdb_file,ch,centro_l,ribo_l,origine,allzero=all_zero)
                     os.system('cp %s %s/init_conf.pdb'%(pdb_file,rep))

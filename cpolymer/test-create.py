@@ -5,11 +5,11 @@ Created on Tue Nov 18 17:35:41 2014
 @author: jarbona
 """
 
-from create import one_polymer
+from .create import one_polymer
 import numpy as np
-from utils import norm
+from .utils import norm
 import unittest
-from constrain import Box,Point
+from .constrain import Box,Point
  
 def test_create():
     
@@ -127,7 +127,7 @@ def test_constrain_on_polymer_quasi_start():
     #end = Point(index=199,position=[0.2,0.2,0.2])
     box = Box([0,0,0],[20,20,20])
     coords,bonds,type_beads,ids = one_polymer(N=20,type_bead=1,ptolerance=0,type_polymer="linear",start_id=0,lconstrain=[start],gconstrain=[box],max_trial=1000)   
-    print norm(coords[0]-np.array([0.2,0.2,0.2]))
+    print((norm(coords[0]-np.array([0.2,0.2,0.2]))))
     assert(norm(coords[0]-np.array([0.2,0.2,0.2])) < 3)
     
 def test_constrain_on_polymer_end():    
@@ -135,7 +135,7 @@ def test_constrain_on_polymer_end():
     #end = Point(index=199,position=[0.2,0.2,0.2])
     box = Box([0,0,0],[20,20,20])
     coords,bonds,type_beads,ids = one_polymer(N=20,type_bead=1,ptolerance=0,type_polymer="linear",start_id=0,lconstrain=[end],gconstrain=[box],max_trial=1000)   
-    print norm(coords[-2]-np.array([0.2,0.2,0.2]))
+    print((norm(coords[-2]-np.array([0.2,0.2,0.2]))))
     assert(norm(coords[-2]-np.array([0.2,0.2,0.2])) < 3)
     
 def test_constrain_on_polymer_start_end():
@@ -145,8 +145,8 @@ def test_constrain_on_polymer_start_end():
     box = Box([0,0,0],[20,20,20])
     coords,bonds,type_beads,ids = one_polymer(N=200,type_bead=1,ptolerance=0,type_polymer="linear",start_id=0,lconstrain=[start,end],gconstrain=[box],max_trial=1000)   
     #print norm(coords[-1]-np.array([0.2,0.2,0.2]))
-    print norm(coords[-2]-np.array([0.2,0.2,0.2]))
-    print norm(coords[1]-np.array([0.2,0.2,0.2]))
+    print((norm(coords[-2]-np.array([0.2,0.2,0.2]))))
+    print((norm(coords[1]-np.array([0.2,0.2,0.2]))))
     assert(norm(coords[-2]-np.array([0.2,0.2,0.2])) < 3)
     assert(norm(coords[1]-np.array([0.2,0.2,0.2])) < 3)
 
@@ -159,8 +159,8 @@ def test_constrain_on_polymer_start_middle_end():
     box = Box([0,0,0],[20,20,20])
     coords,bonds,type_beads,ids = one_polymer(N=200,type_bead=1,ptolerance=0,type_polymer="linear",start_id=0,lconstrain=[start,middle,end],gconstrain=[box],max_trial=1000)   
     #print norm(coords[-1]-np.array([0.2,0.2,0.2]))
-    print norm(coords[-2]-np.array([0.2,0.2,0.2]))
-    print norm(coords[1]-np.array([0.2,0.2,0.2]))
+    print((norm(coords[-2]-np.array([0.2,0.2,0.2]))))
+    print((norm(coords[1]-np.array([0.2,0.2,0.2]))))
     assert(norm(coords[-2]-np.array([0.2,0.2,0.2])) < 3)
     assert(norm(coords[99]-np.array([0.2,0.2,0.2])) < 3)
     assert(norm(coords[101]-np.array([0.2,0.2,0.2])) < 3)

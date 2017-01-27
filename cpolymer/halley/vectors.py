@@ -121,12 +121,12 @@ class V:
 	    self._l = 0.
 	    return
 	if l > 1:
-            self._v = map(float, args)
+            self._v = list(map(float, args))
 	    self._l = None
 	    return
         arg = args[0]
         if isinstance(arg, (list, tuple)):
-            self._v = map(float, arg)
+            self._v = list(map(float, arg))
 	    self._l = None
         elif isinstance(arg, V):
             self._v = list(arg._v[:])
@@ -186,7 +186,7 @@ class V:
         v._l = self._l
         return v
 
-    def __nonzero__(self):
+    def __bool__(self):
         '''A vector is nonzero if any of its elements are nonzero.'''
         for i in range(len(self._v)):
             if self._v[i]: return True
@@ -200,7 +200,7 @@ class V:
     def random(cls, order=3):
         '''Returns a unit vector in a random direction.'''
         # distribution is not without bias, need to use polar coords?
-        v = V(range(order))
+        v = V(list(range(order)))
         v._l = None
         short = True
         while short:
@@ -216,7 +216,7 @@ class V:
         '''Vectors can be added to each other, or a scalar added to them.'''
         if isinstance(other, V):
             if len(other._v) != len(self._v):
-                raise ValueError, 'mismatched dimensions'
+                raise ValueError('mismatched dimensions')
             for i in range(len(self._v)):
                 self._v[i] += other._v[i]
         else:
@@ -232,7 +232,7 @@ class V:
         '''Vectors can be subtracted, or a scalar subtracted from them.'''
         if isinstance(other, V):
             if len(other._v) != len(self._v):
-                raise ValueError, 'mismatched dimensions'
+                raise ValueError('mismatched dimensions')
             for i in range(len(self._v)):
                 self._v[i] -= other._v[i]
         else:
@@ -260,7 +260,7 @@ class V:
 
     def __div__(self, other): return self.__class__(self).__idiv__(other)
     def __rdiv__(self, other):
-        raise TypeError, 'cannot divide scalar by non-scalar value'
+        raise TypeError('cannot divide scalar by non-scalar value')
     def __idiv__(self, other):
         '''Vectors can be divided by scalars; each element is divided.'''
         other = 1.0 / other
@@ -272,7 +272,7 @@ class V:
     def cross(self, other):
         '''Find the vector cross product between two 3d vectors.'''
         if len(self._v) != 3 or len(other._v) != 3:
-            raise ValueError, 'cross multiplication only for 3d vectors'
+            raise ValueError('cross multiplication only for 3d vectors')
         p, q = self._v, other._v
         r = [ p[1] * q[2] - p[2] * q[1],
               p[2] * q[0] - p[0] * q[2],
@@ -302,7 +302,7 @@ class V:
         mag = self.__mag()
         if value is None: return mag
         if zero(mag):
-            raise ValueError, 'Zero-magnitude vector cannot be scaled.'
+            raise ValueError('Zero-magnitude vector cannot be scaled.')
         v = self.__class__(self)
         v.__imul__(value / mag)
         v._l = value
@@ -327,7 +327,7 @@ class V:
         '''Remove elements from the end, or extend with new elements.'''
         order = int(order)
         if order < 1:
-            raise ValueError, 'cannot reduce a vector to zero elements'
+            raise ValueError('cannot reduce a vector to zero elements')
         v = V(self)
         while order < len(v._v):
             v._v.pop()
@@ -361,21 +361,21 @@ class C (V):
         if isinstance(a, complex):
             a = (a.real, a.imag)
         if isinstance(a, V):
-            if len(a) != 2: raise TypeError, 'C() takes exactly 2 elements'
+            if len(a) != 2: raise TypeError('C() takes exactly 2 elements')
             self._v = list(a._v[:])
         elif isseq(a):
-            if len(a) != 2: raise TypeError, 'C() takes exactly 2 elements'
-            self._v = map(float, a)
+            if len(a) != 2: raise TypeError('C() takes exactly 2 elements')
+            self._v = list(map(float, a))
         else:
-            if len(args) != 2: raise TypeError, 'C() takes exactly 2 elements'
-            self._v = map(float, args)
+            if len(args) != 2: raise TypeError('C() takes exactly 2 elements')
+            self._v = list(map(float, args))
 
     #def __repr__(self):
     #    return 'C(%s+%sj)' % (repr(self._v[0]), repr(self._v[1]))
 
     # addition and subtraction of C() work the same as V()
 
-    def dot(self): raise AttributeError, "C instance has no attribute 'dot'"
+    def dot(self): raise AttributeError("C instance has no attribute 'dot'")
 
     def __imul__(self, other):
         if isinstance(other, C):
@@ -410,19 +410,19 @@ class Q (V):
             args = (0, 0, 0, 1)
         a = args[0]
         if isinstance(a, V):
-            if len(a) != 4: raise TypeError, 'Q() takes exactly 4 elements'
+            if len(a) != 4: raise TypeError('Q() takes exactly 4 elements')
             self._v = list(a._v[:])
         elif isseq(a):
-            if len(a) != 4: raise TypeError, 'Q() takes exactly 4 elements'
-            self._v = map(float, a)
+            if len(a) != 4: raise TypeError('Q() takes exactly 4 elements')
+            self._v = list(map(float, a))
         else:
-            if len(args) != 4: raise TypeError, 'Q() takes exactly 4 elements'
-            self._v = map(float, args)
+            if len(args) != 4: raise TypeError('Q() takes exactly 4 elements')
+            self._v = list(map(float, args))
         self._l = None
 
     # addition and subtraction of Q() work the same as V()
 
-    def dot(self): raise AttributeError, "Q instance has no attribute 'dot'"
+    def dot(self): raise AttributeError("Q instance has no attribute 'dot'")
 
     #TODO: extra methods to convert euler vectors and quaternions
 
@@ -494,14 +494,14 @@ class M (V):
         if len(args) == 4: args = collapse(*args)
         a = args[0]
         if isinstance(a, V):
-            if len(a) != 16: raise TypeError, 'M() takes exactly 16 elements'
+            if len(a) != 16: raise TypeError('M() takes exactly 16 elements')
             self._v = list(a._v[:])
         elif isseq(a):
-            if len(a) != 16: raise TypeError, 'M() takes exactly 16 elements'
-            self._v = map(float, a)
+            if len(a) != 16: raise TypeError('M() takes exactly 16 elements')
+            self._v = list(map(float, a))
         else:
-            if len(args) != 16: raise TypeError, 'M() takes exactly 16 elements'
-            self._v = map(float, args)
+            if len(args) != 16: raise TypeError('M() takes exactly 16 elements')
+            self._v = list(map(float, args))
 
     @classmethod
     def rotate(cls, axis, theta=0.0):
@@ -528,7 +528,7 @@ class M (V):
             axis = Q.rotate(axis, theta)
         if isinstance(axis, Q):
             return cls.twist(axis)
-        raise ValueError, 'unknown rotation axis'
+        raise ValueError('unknown rotation axis')
 
     @classmethod
     def twist(cls, torsion):
@@ -601,10 +601,10 @@ class M (V):
         # prettier on multiple lines
         n = self.__class__.__name__
         ns = ' '*len(n)
-        t = n+'('+', '.join([ repr(self._v[i]) for i in 0,1,2,3 ])+',\n'
-        t += ns+' '+', '.join([ repr(self._v[i]) for i in 4,5,6,7 ])+',\n'
-        t += ns+' '+', '.join([ repr(self._v[i]) for i in 8,9,10,11 ])+',\n'
-        t += ns+' '+', '.join([ repr(self._v[i]) for i in 12,13,14,15 ])+')'
+        t = n+'('+', '.join([ repr(self._v[i]) for i in (0,1,2,3) ])+',\n'
+        t += ns+' '+', '.join([ repr(self._v[i]) for i in (4,5,6,7) ])+',\n'
+        t += ns+' '+', '.join([ repr(self._v[i]) for i in (8,9,10,11) ])+',\n'
+        t += ns+' '+', '.join([ repr(self._v[i]) for i in (12,13,14,15) ])+')'
         return t
 
     def __getitem__(self, rc):
@@ -623,18 +623,18 @@ class M (V):
         if not isinstance(rc, tuple): return V.__getitem__(self, rc)
         self._v[rc[0]*4+rc[1]] = float(value)
 
-    def dot(self): raise AttributeError, "M instance has no attribute 'dot'"
-    def magnitude(self): raise AttributeError, "M instance has no attribute 'magnitude'"
+    def dot(self): raise AttributeError("M instance has no attribute 'dot'")
+    def magnitude(self): raise AttributeError("M instance has no attribute 'magnitude'")
 
     def row(self, r, v=None):
         '''Returns or replaces a vector representing a row of the matrix.
         Rows are counted 0-3. If given, new vector must be four numbers.
         '''
-        if r < 0 or r > 3: raise IndexError, 'row index out of range'
+        if r < 0 or r > 3: raise IndexError('row index out of range')
         if v is None: return V(self._v[r*4:(r+1)*4])
         e = v
         if isinstance(v, V): e = v._v
-        if len(e) != 4: raise ValueError, 'new row must include 4 values'
+        if len(e) != 4: raise ValueError('new row must include 4 values')
         self._v[r*4:(r+1)*4] = e
         return v
 
@@ -642,11 +642,11 @@ class M (V):
         '''Returns or replaces a vector representing a column of the matrix.
         Columns are counted 0-3. If given, new vector must be four numbers.
         '''
-        if c < 0 or c > 3: raise IndexError, 'column index out of range'
+        if c < 0 or c > 3: raise IndexError('column index out of range')
         if v is None: return V([ self._v[c+4*i] for i in range(4) ])
         e = v
         if isinstance(v, V): e = v._v
-        if len(e) != 4: raise ValueError, 'new row must include 4 values'
+        if len(e) != 4: raise ValueError('new row must include 4 values')
         for i in range(4): self._v[c+4*i] = e[i]
         return v
 
@@ -790,7 +790,7 @@ class M (V):
                         oC*s2 + oD*s6 + oE*sA + oF*sE,
                         oC*s3 + oD*s7 + oE*sB + oF*sF ]
         else:
-            raise ValueError, 'multiply by 4d matrix or 4d vector or scalar'
+            raise ValueError('multiply by 4d matrix or 4d vector or scalar')
         return self
 
 #----------------------------------------------------------------------------
@@ -861,7 +861,7 @@ def farthest(point, neighbors):
 def __test__():
     from testing import __ok__, __report__
 
-    print 'Testing basic math...'
+    print('Testing basic math...')
 
     __ok__(equal(1.0, 1.0), True)
     __ok__(equal(1.0, 1.01), False)
@@ -879,7 +879,7 @@ def __test__():
     __ok__(equal(radians(90.0), math.pi/2))
     __ok__(equal(radians(180.0), math.pi))
 
-    print 'Testing V vector class...'
+    print('Testing V vector class...')
 
     # structural construction
     __ok__(V.O is not None, True)
@@ -959,7 +959,7 @@ def __test__():
     __ok__(equal(225.0, degrees(track(V(-1,-1)))), True)
     __ok__(equal(315.0, degrees(track(V( 1,-1)))), True)
 
-    print 'Testing C complex number class...'
+    print('Testing C complex number class...')
 
     __ok__(C(1,2) is not None, True)
     __ok__(C(1,2)[0], 1.0)
@@ -982,7 +982,7 @@ def __test__():
     except TypeError: # takes exactly 2 elements
         __ok__(True, True)
 
-    print 'Testing Q quaternion class...'
+    print('Testing Q quaternion class...')
 
     __ok__(Q(1,2,3,4) is not None, True)
     __ok__(Q(1,2,3,4)[1], 2.0)
@@ -992,7 +992,7 @@ def __test__():
     __ok__(Q(), Q(0,0,0,1))
     __ok__(Q(1,2,3,4).conjugate(), Q(-1,-2,-3,4))
 
-    print 'Testing M matrix class...'
+    print('Testing M matrix class...')
 
     m = M()
     __ok__(V(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1), m)
@@ -1059,5 +1059,4 @@ if __name__ == '__main__':
     elif 'time' in sys.argv:
         __time__()
     else:
-        raise Exception, \
-            'This module is not a stand-alone script.  Import it in a program.'
+        raise Exception('This module is not a stand-alone script.  Import it in a program.')

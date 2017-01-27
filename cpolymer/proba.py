@@ -24,7 +24,7 @@ def init_proba(P,dx,lrange=[0,3.14]):
     try:
         index = [Plist[0] ]
     except:
-        print lrange[0],lrange[1],dx
+        print((lrange[0],lrange[1],dx))
     for w,xx in enumerate(x[1:]):
         index.append(index[-1] + Plist[w+1] )
     return x,index
@@ -51,7 +51,7 @@ def init_proba_log(P,dx,lrange=[0,3.14]):
     try:
         index = [Plist[0] ]
     except:
-        print lrange[0],lrange[1],dx
+        print((lrange[0],lrange[1],dx))
     for w,xx in enumerate(x[1:]):
         index.append(index[-1] + Plist[w+1] )
     return x,index
@@ -63,6 +63,6 @@ def generate_point_proba(x,index):
         #print index[i-1],u,index[i] 
         return x[i]
     except:
-        
-        raise "Constrain to high"
+        print("Constrain to high")
+        raise 
     

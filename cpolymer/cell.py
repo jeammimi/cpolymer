@@ -4,11 +4,11 @@ Created on Wed Nov 26 14:27:43 2014
 
 @author: jarbona
 """
-from halley.constrain import Spherical,Nowhere
-from halley.vectors import V
+from .halley.constrain import Spherical,Nowhere
+from .halley.vectors import V
 import numpy as np
-from constrain import Sphere,Point
-from polymer import Polymer
+from .constrain import Sphere,Point
+from .polymer import Polymer
 
 def get_ref_points(snucleus,smicrotubule,l_len_p=[]):
     center = Spherical(V.O,radius=snucleus)
@@ -30,12 +30,12 @@ def get_ref_points(snucleus,smicrotubule,l_len_p=[]):
             radius_x = center * sp
             #print isinstance(radius_x,Nowhere)
             if isinstance(radius_x,Nowhere):
-                print "Warning no intersection for this size of polymer"
+                print("Warning no intersection for this size of polymer")
                 if x < smicrotubule:
-                    print "increasing size"
+                    print("increasing size")
                     sp = Spherical(m,radius=smicrotubule)
                 if x > snucleus:
-                    print "decreasing size"
+                    print("decreasing size")
                     sp = Spherical(m,radius=1.5*snucleus)
                 radius_x = center * sp
                 

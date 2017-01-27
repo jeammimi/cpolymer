@@ -21,18 +21,19 @@ class Pair:
         self.typep = typep
         self.hybrid = hybrid
         
-        if typep not in description_pair.keys():
+        if typep not in list(description_pair.keys()):
             raise typep + "not described"
         self.args = args
         
         
         for k in description_pair[typep]["required"]:
-            if k not in args.keys():
-                print k 
-                raise " argument needed"
-        if description_pair[typep].has_key("optional"):
-            for k,v in description_pair[typep]["optional"].iteritems():
-                if k not in args.keys():
+            if k not in list(args.keys()):
+                print(k) 
+                print(" argument needed")
+                raise 
+        if "optional" in description_pair[typep]:
+            for k,v in list(description_pair[typep]["optional"].items()):
+                if k not in list(args.keys()):
                     args[k] = v
         
         
@@ -44,6 +45,6 @@ class Pair:
         return "pair_coeff {0} {1} {2}".format(self.args["idpair1"],self.args["idpair2"],hybrid) + description_pair[self.typep]["template"].format(**self.args)
 
 if __name__ == "__main__":
-    print Pair("lj/cut",idpair1=1,idpair2=2,epsilon=1.3,sigma=1.1)
+    print((Pair("lj/cut",idpair1=1,idpair2=2,epsilon=1.3,sigma=1.1)))
 
     #print Bond("harmonic",idbond=1,distance=1.4,hybrid=True)

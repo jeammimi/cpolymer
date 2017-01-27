@@ -14,20 +14,21 @@ description_bond = {"harmonic":{"template":"{K:.2f} {R0:.2f}",
 class Bond:
     def __init__(self,typeb,hybrid=False,**args):
         self.typeb = typeb
-        if typeb not in description_bond.keys():
-            print typeb + "not described"
+        if typeb not in list(description_bond.keys()):
+            print((typeb + "not described"))
             raise typeb + "not described"
         self.args = args
         self.hybrid = hybrid
 
         
         for k in description_bond[typeb]["required"]:
-            if k not in args.keys():
-                print k 
-                raise " argument needed"
-        if description_bond[typeb].has_key("optional"):
-            for k,v in description_bond[typeb]["optional"].iteritems():
-                if k not in args.keys():
+            if k not in list(args.keys()):
+                print(k) 
+                print(" argument needed")
+                raise 
+        if "optional" in description_bond[typeb]:
+            for k,v in list(description_bond[typeb]["optional"].items()):
+                if k not in list(args.keys()):
                     args[k] = v
         
     def __repr__(self):
@@ -37,7 +38,7 @@ class Bond:
         return "bond_coeff {0}{1}".format(self.args["idbond"],hybrid) + description_bond[self.typeb]["template"].format(**self.args)
 
 if __name__ == "__main__":
-    print Bond("harmonic",idbond=1,R0=1.4,K=1)
-    print Bond("harmonic",idbond=1,R0=1.4,K=1,hybrid=True)
-    print Bond("fene",idbond=1,R0=1.4,K=1,epsilon=1,sigma=1,hybrid=True)
+    print((Bond("harmonic",idbond=1,R0=1.4,K=1)))
+    print((Bond("harmonic",idbond=1,R0=1.4,K=1,hybrid=True)))
+    print((Bond("fene",idbond=1,R0=1.4,K=1,epsilon=1,sigma=1,hybrid=True)))
     #print Bond("harmonic",idbond=1,distance=1.4,hybrid=True)

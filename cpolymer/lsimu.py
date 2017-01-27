@@ -8,13 +8,13 @@ import subprocess
 import string
 import copy
 import numpy as np
-from polymer import Polymer
-from bond import Bond
-from pair import Pair
-from angle import Angle
+from .polymer import Polymer
+from .bond import Bond
+from .pair import Pair
+from .angle import Angle
 import os
 
-from sortn import sort_nicely
+from .sortn import sort_nicely
 
 
 class LSimu:
@@ -72,7 +72,7 @@ class LSimu:
             #P.change_coords(CM/N[::,np.newaxis]/2**0.5)
             self.molecules[nmol].translate = [] + translate
             self.Coarse.add(P)
-        print("At level {0}, {1} segments".format(self.Coarse.level,Nbead))
+        print(("At level {0}, {1} segments".format(self.Coarse.level,Nbead)))
         #Take care of the extra bonds
         newb = []
         for mol1,mol2,typeb in self.extra_bond:
@@ -143,7 +143,7 @@ class LSimu:
                                                         initconf=initconf,outtraj=outtraj,
                                                         outfile=outfile,
                                                         interactions=interactions,
-                                                        particle=" ".join(map(str,range(1,max(self.natom)+1))),
+                                                        particle=" ".join(map(str,list(range(1,max(self.natom)+1)))),
                                                         **args)
         #Run
         self.Coarse.run(script=script)
@@ -225,7 +225,7 @@ class LSimu:
             if not periodic:
                 for p in self.molecules[nmol].coords:
                     if not self.box.is_inside(p):
-                        print "Mol not in the box"
+                        print("Mol not in the box")
                         raise
             else:
                 #Should rewrap?
@@ -286,10 +286,10 @@ class LSimu:
         one_polymer in the create module
         if a box is specified it will be added in the global constrained of the polymer
         """
-        if  kwargs.has_key("box"):
+        if  "box" in kwargs:
             self.box = kwargs["box"]
             kwargs.pop("box")
-            if kwargs.has_key("gconstrain"):
+            if "gconstrain" in kwargs:
                 
                 kwargs["gconstrain"].append(self.box)
             else:
@@ -310,7 +310,7 @@ class LSimu:
                 if line.startswith("Atoms"):
                     for line in f:
                         if line != "\n":
-                            coords.append(map(float,line.split()[:6]))
+                            coords.append(list(map(float,line.split()[:6])))
                         else:
                             if coords != []:
                                 break
@@ -423,11 +423,11 @@ class LSimu:
                
         
         
-        self.ntype_bond = len(self.liaison.keys())
+        self.ntype_bond = len(list(self.liaison.keys()))
         
         self.ntype_angle = 0
         if self.angle_def is not None and self.Angle != []:
-            self.ntype_angle = len(self.angle_def.keys())
+            self.ntype_angle = len(list(self.angle_def.keys()))
         
         f = open(self.xyz_name,'w')
         f.write("\n")
@@ -442,8 +442,8 @@ class LSimu:
                  %i     angle types
                  0     dihedral types"""%(max(self.natom),self.ntype_bond,self.ntype_angle))
         if self.box is None:
-            raise ("Must add a box: "
-                    "ex: LSimu.add_box([0,0,0],[10,10,10])")
+            print( "Must add a box: ")
+            raise
             
             
         f.write("""         
@@ -457,7 +457,7 @@ class LSimu:
         if Mass == "one":
             Mass = { "%i"%i:1 for i in range(1,max(self.natom)+1)}
         elif Mass == None:
-            print "Must set mass to one to give all atoms mass one or specify a mass for each atoms"
+            print("Must set mass to one to give all atoms mass one or specify a mass for each atoms")
             raise
         self.Mass = Mass
         f.write("\n".join([ "         %i          %.3f"%(i,Mass["%i"%(i)]) for i in range(1,max(self.natom)+1)  ]))
@@ -650,12 +650,12 @@ class LSimu:
             Pair = ["pair_style   lj/cut 1.4 \n" + "pair_modify shift yes\n"]
         Angle = ["angle_style cosine/delta\n"] 
         Angle = ["angle_style harmonic\n"]
-        keyl = range(1,len(self.natom)+1)
+        keyl = list(range(1,len(self.natom)+1))
         for t1 in keyl:
             for t2 in keyl:
                 if t2 >= t1:
-                    if not self.liaison.has_key("%s-%s"%(t1,t2)):
-                        print "Warning liaison between {0} and {1} not defined".format(t1,t2)
+                    if "%s-%s"%(t1,t2) not in self.liaison:
+                        print(("Warning liaison between {0} and {1} not defined".format(t1,t2)))
                     dist,tybe_b = self.liaison["%s-%s"%(t1,t2)]
                     if  cutoff is not None:                   
                         cut = dist*cutoff
@@ -710,7 +710,7 @@ class LSimu:
         #First look in the template directory
         if os.path.exists(os.path.join(os.path.dirname(__file__), template_name)):
             template_name = os.path.abspath(os.path.join(os.path.dirname(__file__), template_name))
-            print "Reading template" , template_name
+            print(("Reading template" , template_name))
        
   
        
@@ -724,7 +724,7 @@ class LSimu:
     def run(self,script):
         self.script = script
         if self.script != None:
-            print "{0} < {1}".format(self.cmd,self.script)
+            print(("{0} < {1}".format(self.cmd,self.script)))
             output = subprocess.check_output("{0} < {1}".format(self.cmd,self.script), shell=True)
             return output
         else:

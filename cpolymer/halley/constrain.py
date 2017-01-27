@@ -46,7 +46,7 @@ __all__ = [ 'Anywhere', 'Nowhere',
             'Unity', 'Duality',
             'Linear', 'Circular', 'Spherical' ]
 
-import vectors ; from vectors import V, zero, equal, EPSILON
+from . import vectors ; from .vectors import V, zero, equal, EPSILON
 import math ; from math import sqrt
 import random
 #----------------------------------------------------------------------------
@@ -61,7 +61,7 @@ class Constraint:
     def __mul__(self, other): return self.combine(other)
     def __rmul__(self, other): return other.combine(self)
     def __str__(self): return self.__repr__()
-    def __nonzero__(self): return True
+    def __bool__(self): return True
 
 #----------------------------------------------------------------------------
 
@@ -88,7 +88,7 @@ class Nowhere (Constraint):
     "If constraints on a point are inconsistent, it can be Nowhere."
 
     def __repr__(self): return "Nowhere()"
-    def __nonzero__(self): return False
+    def __bool__(self): return False
 
     def combine(self, other):
         "Nowhere combined with any other constraint yields Nowhere."
@@ -134,7 +134,7 @@ class Duality (Constraint):
     def __init__(self, pointA, pointB):
         Constraint.__init__(self)
         if pointA == pointB:
-            raise ValueError, 'Duality must refer to two different points.'
+            raise ValueError('Duality must refer to two different points.')
         self.pointA = V(pointA)
         self.pointB = V(pointB)
 
@@ -190,7 +190,7 @@ class Linear (Constraint):
     def __init__(self, pointA, pointB):
         Constraint.__init__(self)
         if pointA == pointB:
-            raise ValueError, 'A Linear must refer to two different points.'
+            raise ValueError('A Linear must refer to two different points.')
         self.pointA = V(pointA)
         self.pointB = V(pointB)
         self.dir = self.pointB - self.pointA
@@ -423,7 +423,7 @@ class Circular (Constraint):
     def __init__(self, point, normal, radius):
         Constraint.__init__(self)
         if zero(radius):
-            raise ValueError, 'A circle must have a non-zero radius.'
+            raise ValueError('A circle must have a non-zero radius.')
         self.point = V(point)
         self.normal = V(normal).normalize()
         self.radius = abs(float(radius))
@@ -628,7 +628,7 @@ class Spherical (Constraint):
     def __init__(self, point, radius):
         Constraint.__init__(self)
         if zero(radius):
-            raise ValueError, 'A sphere must have a non-zero radius.'
+            raise ValueError('A sphere must have a non-zero radius.')
         self.point = V(point)
         self.radius = abs(float(radius))
 
@@ -762,7 +762,7 @@ def _spherical_spherical_test():
 
 def __test__():
     from testing import __ok__, __report__
-    print 'Testing geometrical constraint classes...'
+    print('Testing geometrical constraint classes...')
 
     # trivial constraints
     a1 = Anywhere()
@@ -790,5 +790,4 @@ def __test__():
     __report__()
 
 if __name__ == '__main__':
-    raise Exception, \
-        'This module is not a stand-alone script.  Import it in a program.'
+    raise Exception('This module is not a stand-alone script.  Import it in a program.')

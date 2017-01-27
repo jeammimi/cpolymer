@@ -5,7 +5,7 @@ Created on Fri Nov 28 09:19:38 2014
 @author: jarbona
 """
 import inspect
-from create import one_polymer
+from .create import one_polymer
 import numpy as np
 class Polymer:
     def __init__(self,**kwargs):

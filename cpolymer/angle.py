@@ -16,18 +16,19 @@ class Angle:
         self.typea = typea
         self.hybrid = hybrid
         
-        if typea not in description_angle.keys():
+        if typea not in list(description_angle.keys()):
             raise typea + "not described"
         self.args = args
         
         
         for k in description_angle[typea]["required"]:
-            if k not in args.keys():
-                print k 
-                raise " argument needed"
-        if description_angle[typea].has_key("optional"):
-            for k,v in description_angle[typea]["optional"].iteritems():
-                if k not in args.keys():
+            if k not in list(args.keys()):
+                print(k) 
+                print( " argument needed")
+                raise
+        if "optional" in description_angle[typea]:
+            for k,v in list(description_angle[typea]["optional"].items()):
+                if k not in list(args.keys()):
                     args[k] = v
         
         
@@ -39,6 +40,6 @@ class Angle:
         return "angle_coeff {0} {1}".format(self.args["idangle"],hybrid) + description_angle[self.typea]["template"].format(**self.args)
 
 if __name__ == "__main__":
-    print Angle("harmonic",idangle=1,K=80,theta=180)
+    print((Angle("harmonic",idangle=1,K=80,theta=180)))
 
     #print Bond("harmonic",idbond=1,distance=1.4,hybrid=True)

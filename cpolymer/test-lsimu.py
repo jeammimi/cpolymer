@@ -4,9 +4,9 @@ Created on Fri Nov 28 08:44:07 2014
 
 @author: jarbona
 """
-from lsimu import LSimu
-from polymer import Polymer
-from constrain import Box
+from .lsimu import LSimu
+from .polymer import Polymer
+from .constrain import Box
 
 
 def test_generate_interaction():
@@ -55,9 +55,9 @@ def test_lammps_from_hand_mix():
 
     Simu.add(P1)
     Simu.add(P2)
-    for idl,value in liaison.iteritems(): 
+    for idl,value in list(liaison.items()): 
         R0,idbond = value
-        idpair1,idpair2=map(int,idl.split("-"))
+        idpair1,idpair2=list(map(int,idl.split("-")))
         Simu.add_bond(typeb="harmonic",idbond=idbond,K=80,R0=R0)
         Simu.add_pair(typep="lj/cut",idpair1=idpair1,idpair2=idpair2,epsilon=1,sigma=R0,cutoff1=1.15)
     Simu.add_box(box)
@@ -78,14 +78,14 @@ def test_lammps_angle():
     Simu.add(P1)
     Simu.add_box(box)
     
-    for idl,value in liaison.iteritems(): 
+    for idl,value in list(liaison.items()): 
         R0,idbond = value
-        idpair1,idpair2=map(int,idl.split("-"))
+        idpair1,idpair2=list(map(int,idl.split("-")))
         Simu.add_bond(typeb="harmonic",idbond=idbond,K=80,R0=R0)
         Simu.add_pair(typep="lj/cut",idpair1=idpair1,idpair2=idpair2,epsilon=1,sigma=R0,cutoff1=1.15)
-    for idl,value in angle_def.iteritems():
+    for idl,value in list(angle_def.items()):
         K,idangle = value
-        idpair1,idpair2,idpair3=map(int,idl.split("-"))
+        idpair1,idpair2,idpair3=list(map(int,idl.split("-")))
         Simu.add_angle(typea="harmonic",idangle=idangle,K=K,theta=180)
         
     Simu.generate_xyz("test/lp.xyz",Mass="one")
@@ -104,9 +104,9 @@ def test_lammps_from_hand_mix2():
     Simu.add(P1)
   
     Simu.add_box(box)
-    for idl,value in liaison.iteritems(): 
+    for idl,value in list(liaison.items()): 
         R0,idbond = value
-        idpair1,idpair2=map(int,idl.split("-"))
+        idpair1,idpair2=list(map(int,idl.split("-")))
         Simu.add_bond(typeb="harmonic",idbond=idbond,K=80,R0=R0)
         if idpair1 == idpair2:
             cutoff1 = 3
@@ -128,9 +128,9 @@ def test_lammps_from_hand_mix_interactions():
 
     Simu.add(P1)
     Simu.add_box(box)
-    for idl,value in liaison.iteritems(): 
+    for idl,value in list(liaison.items()): 
         R0,idbond = value
-        idpair1,idpair2=map(int,idl.split("-"))
+        idpair1,idpair2=list(map(int,idl.split("-")))
         Simu.add_bond(typeb="harmonic",idbond=idbond,K=350,R0=R0)
         Simu.add_pair(typep="lj/cut",idpair1=idpair1,idpair2=idpair2,epsilon=1,sigma=R0,cutoff1=1.15)
         
@@ -144,9 +144,9 @@ def test_lammps_from_hand_mix_interactions():
     box = Box([0,0,0],[10,10,10])
     Simu.add_box(box)
     Simu.clean_interactions()
-    for idl,value in liaison.iteritems(): 
+    for idl,value in list(liaison.items()): 
         R0,idbond = value
-        idpair1,idpair2=map(int,idl.split("-"))
+        idpair1,idpair2=list(map(int,idl.split("-")))
         Simu.add_bond(typeb="fene",idbond=idbond,K=80,R0=R0,epsilon=1.2,sigma=1)
         Simu.add_pair(typep="lj/cut",idpair1=idpair1,idpair2=idpair2,epsilon=1,sigma=R0,cutoff1=1.15)
 
