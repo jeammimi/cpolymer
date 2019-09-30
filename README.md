@@ -2,8 +2,8 @@ Inferring the physical properties of yeast chromatin through Bayesian analysis o
 =======
 
  [![DOI](https://zenodo.org/badge/27133678.svg)](https://zenodo.org/badge/latestdoi/27133678)
- 
-This notebook explain how to create an initial configuration for the Yeast nucleus, how to set a persistence length 
+
+This notebook explain how to create an initial configuration for the Yeast nucleus, how to set a persistence length
 and how to run the simulation.
 The simulations will generate a trajectory file and also dumps the contact to compute hic
 matrices
@@ -42,7 +42,7 @@ Here How to create a polymer whose path has some specific constrain
 
 http://nbviewer.ipython.org/github/jeammimi/cpolymer/blob/master/notebook/polymer_path.ipynb
 
-Finally a little bit of fun with the creation of a polymeric eiffel tower 
+Finally a little bit of fun with the creation of a polymeric eiffel tower
 
 http://nbviewer.ipython.org/github/jeammimi/cpolymer/blob/master/notebook/cpolymer_eiffel_demo.ipynb
 
@@ -67,3 +67,10 @@ Here is the video from the last notebook!
 
 https://www.youtube.com/watch?v=iwep58wIsuU
 
+
+To visualise with vmd
+=======
+First install vmd then use the script  visu/rep.tcl :
+for example:
+
+vmd  -e ../visu/rep.tcl ./nucleus_yeastnoyau2.pdb dump_init.nucleus_yeast.comp.dcd final.xyz
